@@ -1,0 +1,9 @@
+{
+  "BOT_TOKEN": "",
+  "HOST": "",
+  "PORT": 0,
+  "MONGO": {
+    "URL": "",
+    "DBNAME": ""
+  }
+}
