@@ -1,1 +1,2 @@
-import "./config/Config";
+// import "./bot/bot";
+import "./components/logger/logger";

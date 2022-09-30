@@ -15,5 +15,4 @@ let config: IConfig = DefaultConfig;
 if (process.env.NODE_ENV === "development") config = DevelopmentConfig;
 else config = ProductionConfig;
 
-console.log(config.MONGO.DBNAME);
-console.log("config.MONGO.DBNAME");
+export default config;
