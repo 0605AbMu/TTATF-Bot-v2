@@ -1,5 +1,5 @@
 {
-  "type": "default",
+  "type": "Default",
   "APP_HOST": "localhost",
   "APP_PORT": 12
 }

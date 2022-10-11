@@ -1,8 +1,6 @@
-import { Console } from "console";
 import Express from "express";
 
 // Config
-
 import Config from "./config/Config";
 
 const app = Express();
