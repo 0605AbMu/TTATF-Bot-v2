@@ -1,5 +1,7 @@
 import IConfig from "./IConfig";
 import DefaultConfig from "./data/default.json";
+import DevelopmentConfig from "./data/development.json";
+import ProductionConfig from "./data/production.json";
 import DotEnv from "dotenv";
 
 DotEnv.config();
@@ -13,10 +15,10 @@ let config: IConfig | null = null;
 
 if (process.env.NODE_ENV === "production")
   // config will be production data
-  config = null;
+  config = ProductionConfig;
 else if (process.env.NODE_ENV === "development")
   // config will be development data
-  config = null;
+  config = DevelopmentConfig;
 else config = DefaultConfig;
 
 console.info(`Config Type: ${config ? config.type : "Default"}`);
