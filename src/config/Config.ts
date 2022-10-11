@@ -4,22 +4,37 @@ import DevelopmentConfig from "./data/development.json";
 import ProductionConfig from "./data/production.json";
 import DotEnv from "dotenv";
 
-DotEnv.config();
-console.info(
-  `Environment Type: ${
-    process.env.NODE_ENV ? process.env.NODE_ENV.toString() : "Default"
-  }`
-);
+class Config implements IConfig {
+  type: string;
+  APP_HOST: string;
+  APP_PORT: number;
 
-let config: IConfig | null = null;
+  constructor() {
+    // Detect ENV type?
+    this.InitalizeENV();
+    // Assign ENV parameters
+    this.AssignConfigData();
+    console.info("Config Initialized. Config type: " + this.type);
+  }
 
-if (process.env.NODE_ENV === "production")
-  // config will be production data
-  config = ProductionConfig;
-else if (process.env.NODE_ENV === "development")
-  // config will be development data
-  config = DevelopmentConfig;
-else config = DefaultConfig;
+  private InitalizeENV() {
+    DotEnv.config();
+    if (process.env.NODE_ENV) {
+      this.type = process.env.NODE_ENV;
+    } else this.type = "Default";
+  }
 
-console.info(`Config Type: ${config ? config.type : "Default"}`);
-export default config;
+  private AssignConfigData() {
+    let configData: IConfig;
+    if (this.type.toLowerCase() === "development")
+      configData = DevelopmentConfig;
+    else if (this.type.toString() === "production")
+      configData = ProductionConfig;
+    else configData = DefaultConfig;
+    Object.keys(configData).forEach((x) => {
+      this[x] = configData[x];
+    });
+  }
+}
+
+export default new Config();
