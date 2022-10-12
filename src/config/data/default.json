@@ -1,5 +1,7 @@
 {
   "type": "Default",
   "APP_HOST": "localhost",
-  "APP_PORT": 12
+  "APP_PORT": 12,
+  "TELEGRAM_BOT_TOKEN": "2133608433:AAGvJ9kd6YKLM8oYGtxm1vGl8WUoJ-7yeYg",
+  "LOG_PATH": "logs/all.log"
 }

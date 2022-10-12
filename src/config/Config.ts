@@ -1,4 +1,4 @@
-import IConfig from "./IConfig";
+import IConfig from "../interfaces/IConfig";
 import DefaultConfig from "./data/default.json";
 import DevelopmentConfig from "./data/development.json";
 import ProductionConfig from "./data/production.json";
@@ -8,7 +8,8 @@ class Config implements IConfig {
   type: string;
   APP_HOST: string;
   APP_PORT: number;
-
+  TELEGRAM_BOT_TOKEN: string;
+  LOG_PATH: string;
   constructor() {
     // Detect ENV type?
     this.InitalizeENV();
@@ -17,6 +18,7 @@ class Config implements IConfig {
     console.info("Config Initialized. Config type: " + this.type);
   }
 
+  // Detecting ENV type. ENV type detected from process.env else [Default]
   private InitalizeENV() {
     DotEnv.config();
     if (process.env.NODE_ENV) {
