@@ -1,6 +1,7 @@
-import { Context } from "telegraf";
-import Session from "./session";
+import { Context, Scenes } from "telegraf";
+import MySessionData from "./session";
 
 export default interface MyContext extends Context {
-  session: Session;
+  data: MySessionData;
+  scene: Scenes.SceneContextScene<MyContext, MySessionData>;
 }

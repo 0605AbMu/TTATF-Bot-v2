@@ -1,5 +1,5 @@
 import { Scenes } from "telegraf";
-
-const Student = new Scenes.BaseScene("STUDENT_SCENE");
+import MyContext from "../interfaces/MyContext";
+const Student = new Scenes.BaseScene<MyContext>("STUDENT_SCENE");
 
 export default Student;
