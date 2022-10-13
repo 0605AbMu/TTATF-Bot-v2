@@ -10,6 +10,8 @@ class Config implements IConfig {
   APP_PORT: number;
   TELEGRAM_BOT_TOKEN: string;
   LOG_PATH: string;
+  MONGO_URL: string;
+  MONGO_DB_NAME: string;
   constructor() {
     // Detect ENV type?
     this.InitalizeENV();

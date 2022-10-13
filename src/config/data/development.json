@@ -2,7 +2,8 @@
   "type": "Development",
   "APP_HOST": "localhost",
   "APP_PORT": 12,
+  "MONGO_URL": "mongodb://127.0.0.1:27017/",
+  "MONGO_DB_NAME": "",
   "TELEGRAM_BOT_TOKEN": "",
   "LOG_PATH": ""
-
 }

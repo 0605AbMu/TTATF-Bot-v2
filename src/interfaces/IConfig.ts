@@ -19,4 +19,12 @@ export default interface IConfig {
    * LOG file Path
    */
   LOG_PATH: string;
+  /**
+   * MongoDB uchun url manzil
+   */
+  MONGO_URL: string;
+  /**
+   * Name of database
+   */
+  MONGO_DB_NAME: string;
 }
