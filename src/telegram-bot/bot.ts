@@ -2,13 +2,13 @@ import { Telegraf, Context, TelegramError, Scenes, session } from "telegraf";
 import Config from "../config/Config";
 import Logger from "../logger/logger";
 import MyContext from "./interfaces/MyContext";
-import MySessionData from "./interfaces/session";
+import MySessionData from "./interfaces/ContextData";
 import Users, { User as UserModel } from "./Models/Users";
 import { Roles } from "./constants/roles";
 
-import User from "./scenes/user";
-import Admin from "./scenes/admin";
-import Student from "./scenes/student";
+import User from "./scenes/User/user";
+import Admin from "./scenes/Admin/admin";
+import Student from "./scenes/Student/student";
 
 const bot = new Telegraf<MyContext>(Config.TELEGRAM_BOT_TOKEN);
 
@@ -16,7 +16,7 @@ const bot = new Telegraf<MyContext>(Config.TELEGRAM_BOT_TOKEN);
 bot.use(session());
 
 bot.use(
-  new Scenes.Stage<MyContext, MySessionData>([
+  new Scenes.Stage<MyContext, Scenes.SceneSessionData>([
     User,
     Student,
     Admin,
@@ -31,33 +31,32 @@ bot.use(async (ctx, next) => {
     );
     return;
   }
-  next();
+  await next();
 });
 
 // SwitchingData
-
 bot.use(async (ctx, next) => {
   if (ctx.data == undefined) {
     ctx.data = {};
   }
   let user = <UserModel>await Users.findOne({
-    telegramData: { id: ctx.chat.id },
+    "telegramData.id": ctx.from.id,
   });
-  if (!user) {
+  if (user == null) {
     let temp = new UserModel(ctx.from);
     user = temp;
     temp["_id"] = null;
     await Users.insertOne(temp);
   }
-  if (user.role == Roles.Admin) {
+  if (user.role === Roles.Admin) {
     ctx.data.admin = user;
-    ctx.scene.enter("ADMIN_SCENE");
+    await ctx.scene.enter("ADMIN_SCENE");
   } else if (user.role === Roles.Student) {
     ctx.data.student = user;
-    ctx.scene.enter("STUDENT_SCENE");
+    await ctx.scene.enter("STUDENT_SCENE");
   } else {
     ctx.data["user"] = user;
-    ctx.scene.enter("USER_SCENE");
+    await ctx.scene.enter("USER_SCENE");
   }
   next();
 });

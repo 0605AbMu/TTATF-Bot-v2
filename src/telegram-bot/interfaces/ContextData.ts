@@ -1,5 +1,5 @@
 import {Scenes} from "telegraf";
-export default interface MySessionData extends Scenes.SceneSessionData{
+export default interface ContextData{
   admin?: any;
   student?: any;
   user?: any;
