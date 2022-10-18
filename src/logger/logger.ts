@@ -21,7 +21,6 @@ class Logger {
         }),
         new winston.transports.File({
           filename: this.LogPath,
-          silent: true,
           format: winston.format.combine(
             winston.format.simple(),
             winston.format.colorize()
