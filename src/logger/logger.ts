@@ -1,10 +1,15 @@
 import winston, { loggers } from "winston";
 import Config from "../config/Config";
 import { TelegramError } from "telegraf";
+import { MongoAPIError } from "mongodb";
+
 class Logger {
   private LogPath: string = Config.LOG_PATH;
   private logger: winston.Logger;
-  constructor() {
+  constructor(logFileName?: string) {
+    if (logFileName) this.LogPath += logFileName;
+    else this.LogPath += "default.log";
+
     this.logger = winston.createLogger({
       // format: winston.format.colorize().,
       transports: [
@@ -16,6 +21,7 @@ class Logger {
         }),
         new winston.transports.File({
           filename: this.LogPath,
+          silent: true,
           format: winston.format.combine(
             winston.format.simple(),
             winston.format.colorize()
@@ -27,15 +33,16 @@ class Logger {
 
   // Log Any Error
   public LogError(error: Error) {
-    this.logger.error(`\n${error.name}\n${error.message}`);
+    this.logger.error(`\n${error.name}\n${error.message}\n${error.stack}`);
   }
 
   public LogTelegramError(error: TelegramError): void {
     this.logger.error(`
-${error.name} | ${error.response.error_code};
+Code: ${error.response.error_code};
 Description: ${error.response.description};
 Method: ${error.on["method"]};
-Payload: ${JSON.stringify(error.on["payload"])};`);
+Payload: ${JSON.stringify(error.on["payload"])};
+Stack: ${error.stack};`);
   }
   // Log Any Messages
   public LogMessage(message: string) {
