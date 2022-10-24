@@ -5,6 +5,12 @@ import {
   IncorrectLoginAndPassword,
   StudentNotFoundError,
 } from "../../User/Errors/Errors";
+import axios, { Axios } from "axios";
+
+let StudentListOfHemis = {
+  lastUpdatedDate: (Date = null),
+  list: Array<any>,
+};
 
 async function CheckHemisData(ctx: MyContext, next) {
   if (!ctx.UserData.HemisData) {
@@ -17,5 +23,20 @@ async function CheckHemisData(ctx: MyContext, next) {
   }
   next();
 }
+
+async function UpdateHemisData() {
+  console.log("Updating...");
+  const axios = new Axios({
+    baseURL: "https://student.ttatf.uz/rest/",
+    headers: {
+      Authorization: "Bearer 702M2NPGcATxMoiPDkoF2xOAvP2fSve",
+    },
+  });
+
+  const result = await axios.get("/v1/data/student-list");
+  console.log(result);
+}
+
+UpdateHemisData();
 
 export default CheckHemisData;

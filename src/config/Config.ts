@@ -12,6 +12,8 @@ class Config implements IConfig {
   LOG_PATH: string;
   MONGO_URL: string;
   MONGO_DB_NAME: string;
+  HEMIS_API_URL: string;
+  BEARER_TOKEN_FOR_HEMIS: string;
   constructor() {
     // Detect ENV type?
     this.InitalizeENV();

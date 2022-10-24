@@ -31,11 +31,16 @@ bot.use(
 
 // Composing user to Student
 bot.use(
-  Composer.optional((ctx: MyContext) => {
-    if (ctx.UserData.role === "Student") {
-      return true;
-    } else return false;
-  }, Student)
+  Composer.catch(
+    (err, ctx) => {
+      Logger.LogError(<Error>err);
+    },
+    Composer.optional((ctx: MyContext) => {
+      if (ctx.UserData.role === "Student") {
+        return true;
+      } else return false;
+    }, Student)
+  )
 );
 
 // Composing user to User
