@@ -1,8 +1,8 @@
 import MyContext from "../Interfaces/MyContext";
 
-function ChatTypeChecker(ctx: MyContext, next) {
+async function ChatTypeChecker(ctx: MyContext, next) {
   if (ctx.chat?.type !== "private") {
-    ctx.replyWithHTML("<b>Bot faqat shaxsiy yozishmalarda ishlaydi</b>");
+    await ctx.replyWithHTML("<b>Bot faqat shaxsiy yozishmalarda ishlaydi</b>");
     return;
   }
   next();
