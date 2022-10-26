@@ -11,6 +11,7 @@ async function InitializeUserData(ctx: MyContext, next) {
       role: "User",
       registratedDate: new Date(Date.now()),
       telegamUser: ctx.from,
+      HemisData: null
     };
     User._id = await (await UserModel.insertOne(User)).insertedId;
   }

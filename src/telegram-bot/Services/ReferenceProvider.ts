@@ -27,12 +27,13 @@ export class ReferenceProvider {
   public async GetCookies() {
     try {
       const result = await this.GetStudentFrontEndCookie(
-        this.User.HemisData.login,
-        this.User.HemisData.password
+        this.User.StudentData.login,
+        this.User.StudentData.password
         // "368221100658",
         // "159357Dax"
       );
       this.cookie = result;
+      return result;
     } catch (error) {
       throw error;
     }

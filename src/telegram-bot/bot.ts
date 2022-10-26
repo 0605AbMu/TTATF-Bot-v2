@@ -16,18 +16,10 @@ const bot = new Telegraf<MyContext>(Config.TELEGRAM_BOT_TOKEN);
 
 bot.use(session());
 
-
-bot.use(
-  Composer.catch(
-    (err, ctx) => {
-      logger.LogTelegramError(<TelegramError>err);
-    },
-    /// Initialization data of User;
-    InitializeUserData,
-    ///Bot works only in private chat
-    ChatTypeChecker
-  )
-);
+// Check Chat Type
+bot.use(ChatTypeChecker);
+// Initialize User Data
+bot.use(InitializeUserData);
 
 // Composing user to Admin
 bot.use(

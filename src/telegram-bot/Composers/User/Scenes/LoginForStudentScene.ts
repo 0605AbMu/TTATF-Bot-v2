@@ -1,13 +1,9 @@
 import { Markup, Scenes, Telegraf } from "telegraf";
-import { Update } from "telegraf/types";
 import MyContext from "../../../Interfaces/MyContext";
-import UserModel, { HemisDataType } from "../../../Models/UserModel";
+import UserModel from "../../../Models/UserModel";
+import HemisDataModel from "../../../Models/HemisDataModel";
+import { ReferenceProvider } from "../../../Services/ReferenceProvider";
 import { HomeKeyboardMarkup } from "../Constants/Markups";
-import GetStudentDataFromHemis from "../other/GetStudentDataFromHemis";
-import {
-  IncorrectLoginAndPassword,
-  StudentNotFoundError,
-} from "../Errors/Errors";
 
 interface MySessionData extends Scenes.WizardSessionData {
   login: string;
@@ -37,40 +33,58 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
       await next();
     },
     async (ctx) => {
-      //Same logic for Check student login and password for hemis
-      let hemisResult: HemisDataType;
+      const hemisData = await HemisDataModel.findOne({
+        student_id_number: ctx.scene.session.login,
+      });
+      if (hemisData == null) {
+        await ctx.replyWithHTML(
+          "<b>Bunday login va parolga ega talaba topilmadi!</b>"
+        );
+        ctx.scene.leave();
+        return;
+      }
+
       try {
-        hemisResult = await GetStudentDataFromHemis(
-          ctx.scene.session.login,
-          ctx.scene.session.password
-        );
-        const result = await UserModel.updateOne(
-          { "telegamUser.id": ctx.from.id },
-          {
-            $set: { role: "Student", HemisData: hemisResult },
-          }
-        );
-        if (result.modifiedCount === 0) {
-          await ctx.replyWithHTML("<b>Sizning ma'lumotlaringiz topilmadi!</b>");
-          await ctx.scene.leave();
+        const cookie = new ReferenceProvider(ctx.UserData).GetCookies();
+        if (cookie == null) {
+          await ctx.replyWithHTML(
+            "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmaysiz.</b>"
+          );
+          ctx.scene.leave();
           return;
         }
-        await ctx.replyWithHTML(
-          "<b>Tizimga muvoffaqiyatli kirdingiz. Qayta /start buyrug'ini yuborish orqali botdan foydalanishingiz mumkin.</b>",
-          {
-            reply_markup: Markup.removeKeyboard().reply_markup,
-          }
-        );
-        ctx.scene.session.isSuccess = true;
-      } catch (err) {
-        if (
-          err instanceof IncorrectLoginAndPassword ||
-          err instanceof StudentNotFoundError
-        ) {
-          await ctx.replyWithHTML(`<b>${err.message}</b>`);
-        }
-        throw err;
+      } catch (error) {
+        throw error;
       }
+
+      const updateResult = await UserModel.updateOne(
+        { _id: ctx.UserData._id },
+        {
+          $set: {
+            StudentData: {
+              login: ctx.scene.session.login,
+              password: ctx.scene.session.password,
+              HemisData: hemisData,
+            },
+          },
+        }
+      );
+      
+      if (updateResult.modifiedCount == 0) {
+        await ctx.replyWithHTML(
+          "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmadingiz.</b>"
+        );
+        ctx.scene.leave();
+        return;
+      }
+      await ctx.replyWithHTML(
+        "<b>Tizimga muvoffaqiyatli kirdingiz. Qayta /start buyrug'ini yuborish orqali botdan foydalanishingiz mumkin.</b>",
+        {
+          reply_markup: Markup.removeKeyboard().reply_markup,
+        }
+      );
+      ctx.scene.session.isSuccess = true;
+
       await ctx.scene.leave();
     }
   )

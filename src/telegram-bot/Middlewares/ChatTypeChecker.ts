@@ -1,11 +1,18 @@
+import logger from "../../logger/logger";
 import MyContext from "../Interfaces/MyContext";
 
 async function ChatTypeChecker(ctx: MyContext, next) {
-  if (ctx.chat?.type !== "private") {
-    await ctx.replyWithHTML("<b>Bot faqat shaxsiy yozishmalarda ishlaydi</b>");
-    return;
+  try {
+    if (ctx.chat?.type !== "private") {
+      await ctx.replyWithHTML(
+        "<b>Bot faqat shaxsiy yozishmalarda ishlaydi</b>"
+      );
+      return;
+    }
+    next();
+  } catch (error) {
+    logger.LogError(error);
   }
-  next();
 }
 
 export default ChatTypeChecker;
