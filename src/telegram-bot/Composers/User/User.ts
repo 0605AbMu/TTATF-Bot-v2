@@ -19,7 +19,6 @@ User.start(async (ctx) => {
 });
 
 User.hears(buttons.Home.Kirish, async (ctx) => {
-  throw new Error("sfsdfdsf");
   await ctx.scene.enter("LoginForStudent");
 });
 

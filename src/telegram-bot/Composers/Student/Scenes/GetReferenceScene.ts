@@ -28,7 +28,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
       {
         caption: `<b>${
           ctx.UserData.StudentData.HemisData.short_name
-        } - 📄Malumotnoma.pdf\nBerilgan sana: ${new Date(
+        } - 📄Malumotnoma.\nBerilgan sana: ${new Date(
           Date.now()
         ).toLocaleDateString()} </b>\n@${ctx.botInfo.username}`,
         parse_mode: "HTML"

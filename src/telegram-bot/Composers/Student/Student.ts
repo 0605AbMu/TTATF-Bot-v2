@@ -16,6 +16,7 @@ import { Home } from "./Constants/Buttons";
 
 // Scenes
 import GetReferenceScene from "./Scenes/GetReferenceScene";
+import logger from "../../../logger/logger";
 
 const Student = new Composer<MyContext>();
 
@@ -37,8 +38,12 @@ Student.start(async (ctx) => {
 });
 
 Student.hears(Home.Reference, async (ctx) => {
-  throw new Error("sdfsdfsd");
-  await ctx.scene.enter("GetReferenceScene");
+  try {
+    await ctx.scene.enter("GetReferenceScene");
+  } catch (error) {
+    await ctx.replyWithHTML(`<b>Xatolik:${error.message}</b>`);
+    logger.LogError(error);
+  }
 });
 
 Student.hears(Home.Contact, async (ctx) => {
@@ -59,5 +64,7 @@ Student.hears(Home.Exit, async (ctx) => {
     Markup.removeKeyboard()
   );
 });
+
+Student.use(Composer.catch((err, ctx) => {}));
 
 export default Student;

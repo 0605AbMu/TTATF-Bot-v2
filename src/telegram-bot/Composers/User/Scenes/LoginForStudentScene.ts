@@ -124,4 +124,10 @@ scene.leave(async (ctx) => {
   });
 });
 
+scene.use(
+  Composer.catch((err, ctx) => {
+    ctx.scene.leave();
+  })
+);
+
 export default scene;
