@@ -66,5 +66,17 @@ Student.hears(Home.Exit, async (ctx) => {
   );
 });
 
+Student.hears(Home.AboutMySelf, (ctx) => {
+  const data = ctx.UserData.StudentData.HemisData;
+  ctx.replyWithHTML(`<b>F.I.O: ${data.full_name};
+Login: ${data.student_id_number};
+O'rtacha GPA: ${data.avg_gpa};
+Kredit: ${data.total_credit};
+Kurs: ${data.level.name};
+Manzil: ${data.address};
+Tuman: ${data.district.name};
+Viloyat: ${data.province.name};
+Holati: ${data.studentStatus.name};</b>`);
+});
 
 export default Student;
