@@ -1,9 +1,12 @@
-import { Composer, Scenes, session } from "telegraf";
+import { Composer, Markup, Scenes, session } from "telegraf";
 import MyContext from "../../Interfaces/MyContext";
 import UserModel from "../../Models/UserModel";
 
 //Middlewares
-import CheckHemisData from "./Middlewares/CheckHemisData";
+import {
+  CheckHemisDataOfStudent,
+  CheckStudentLoginAndPasswordForExists,
+} from "./Middlewares/CheckHemisDataOfStudent";
 
 // Markups
 import { HomeMarkup } from "./Constants/Markups";
@@ -17,21 +20,44 @@ import GetReferenceScene from "./Scenes/GetReferenceScene";
 const Student = new Composer<MyContext>();
 
 Student.use(session());
-Student.use(new Scenes.Stage([GetReferenceScene]));
+Student.use(new Scenes.Stage([GetReferenceScene]).middleware());
+
+// Parol va logini mavjud ekanligini tekshiradi!
+Student.use(CheckStudentLoginAndPasswordForExists);
+// Talabaning meta ma'lumotlarini db dan olin UserData ga birlashtiradi
+Student.use(CheckHemisDataOfStudent);
 
 Student.start(async (ctx) => {
-  await ctx.replyWithHTML(`Assalomu alaykum. Xush kelibsiz!`, {
-    reply_markup: HomeMarkup,
-  });
+  ctx.replyWithHTML(
+    `<b>👋Assalomu alaykum ${ctx.UserData.StudentData.HemisData.short_name}. Xush kelibsiz!</b>`,
+    {
+      reply_markup: HomeMarkup,
+    }
+  );
 });
 
 Student.hears(Home.Reference, async (ctx) => {
-  try {
-    await ctx.scene.enter("GetReferenceScene");
-  } catch (error) {
-    ctx.replyWithHTML(`<b>Xatolik:\n${error.message}</b>`);
-    throw error;
-  }
+  throw new Error("sdfsdfsd");
+  await ctx.scene.enter("GetReferenceScene");
+});
+
+Student.hears(Home.Contact, async (ctx) => {
+  await ctx.replyWithHTML(`<b>${"☎️Telefon:".padEnd(15)} +998....;
+${"📩E-mail:".padEnd(15)} ....@...uz;
+${"🌐Web-sayt:".padEnd(15)} www.ttatf.uz</b>;`);
+});
+
+Student.hears(Home.Exit, async (ctx) => {
+  await UserModel.updateOne(
+    { _id: ctx.UserData._id },
+    {
+      $set: { StudentData: null, role: "User" },
+    }
+  );
+  await ctx.replyWithHTML(
+    `<b>Tizimdan chiqildi!\n/start buyrug'ini yuboring</b>`,
+    Markup.removeKeyboard()
+  );
 });
 
 export default Student;

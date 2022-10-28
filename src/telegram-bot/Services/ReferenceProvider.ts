@@ -10,7 +10,6 @@ const axios = new Axios.Axios({
   }),
 });
 
-// console.log(axios.defaults.baseURL)
 export enum Status {
   "Pending",
   "Finished",
@@ -54,7 +53,7 @@ export class ReferenceProvider {
           .querySelector("meta[name='csrf-param']")
           ?.getAttribute("content");
         if (!param || !token)
-          throw new Error("HEMIS tizimi ishlamayotgan bo'lishi mumkin!");
+          rej(new Error("HEMIS tizimi ishlamayotgan bo'lishi mumkin!"));
         const RequestData = new FormData();
         RequestData.append("FormStudentLogin[login]", login);
         RequestData.append("FormStudentLogin[password]", password);
@@ -71,7 +70,8 @@ export class ReferenceProvider {
           }
         );
         if (response2.headers["set-cookie"] === undefined) {
-          throw new Error("Bunday login yoki parolga ega talaba topilmadi");
+          rej(new Error("Bunday login yoki parolga ega talaba topilmadi!"));
+          return;
         }
         this.cookie = response2.headers["set-cookie"];
         res(response2.headers["set-cookie"]);
@@ -92,9 +92,9 @@ export class ReferenceProvider {
           },
         });
         const parsedData = HTMLParser(result.data);
-        if (!parsedData) throw new Error("Noma'lum xatolik!");
+        if (!parsedData) rej(new Error("Noma'lum xatolik!"));
         const table = parsedData.querySelector("table");
-        if (!table) throw new Error("Noma'lum xatolik!");
+        if (!table) rej(new Error("Noma'lum xatolik!"));
         const nodes = table
           .getElementsByTagName("tbody")[0]
           .getElementsByTagName("tr");
@@ -114,7 +114,7 @@ export class ReferenceProvider {
         },
         responseType: "arraybuffer",
       });
-      if (result.status != 200) throw new Error("Bu fayl topilmadi");
+      if (result.status != 200) rej(new Error("Bu fayl topilmadi"));
       this.Status = Status.Finished;
       res(result.data);
     });

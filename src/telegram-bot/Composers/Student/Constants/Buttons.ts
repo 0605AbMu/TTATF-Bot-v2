@@ -4,4 +4,5 @@ export let Home = {
   EmployeeData: "Xodimlar haqida ma'lumot",
   AboutMySelf: "Ma'lumotlarim",
   Contact: "Aloqa",
+  Exit: "Chiqish",
 };

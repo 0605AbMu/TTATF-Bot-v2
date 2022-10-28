@@ -1,4 +1,4 @@
-import { Markup, Scenes, Telegraf } from "telegraf";
+import { Composer, Markup, Scenes, Telegraf, TelegramError } from "telegraf";
 import { InlineKeyboardButton } from "telegraf/types";
 import MyContext from "../../../Interfaces/MyContext";
 import { ReferenceProvider } from "../../../Services/ReferenceProvider";
@@ -20,36 +20,50 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
     const result = await ctx.scene.session.provider.GetRerefenceFileById(
       ctx.callbackQuery.data
     );
-    await ctx.replyWithDocument({
-      source: Buffer.from(result),
-      filename: `${ctx.UserData.telegamUser.first_name} - Malumotnoma.pdf`,
-    });
+    await ctx.replyWithDocument(
+      {
+        source: Buffer.from(result),
+        filename: `${ctx.UserData.StudentData.HemisData.short_name} - 📄Malumotnoma.pdf`,
+      },
+      {
+        caption: `<b>${
+          ctx.UserData.StudentData.HemisData.short_name
+        } - 📄Malumotnoma.pdf\nBerilgan sana: ${new Date(
+          Date.now()
+        ).toLocaleDateString()} </b>\n@${ctx.botInfo.username}`,
+        parse_mode: "HTML"
+      }
+    );
     delete ctx.scene.session.provider;
     ctx.scene.leave();
   })
 );
 
 scene.enter(async (ctx) => {
-  await ctx.replyWithHTML("<b>Iltimos kuting. Ma'lumotlaringiz yuklanyapdi...</b>");
-
+  await ctx.replyWithHTML(
+    "<b>⏳Iltimos kuting. Ma'lumotlaringiz yuklanyapdi...</b>"
+  );
   ctx.scene.session.provider = new ReferenceProvider(ctx.UserData);
-//   try {
-    await ctx.scene.session.provider.GetCookies();
-    let FileList = await ctx.scene.session.provider.GetReferenceFilesList();
-    let Buttons: InlineKeyboardButton[] = [];
-    FileList.forEach((x) => {
-      Buttons.push({
-        text: x.getElementsByTagName("td")[5].text,
-        callback_data: x.attrs["data-key"],
-      });
+  await ctx.scene.session.provider.GetCookies();
+  let FileList = await ctx.scene.session.provider.GetReferenceFilesList();
+  let Buttons: InlineKeyboardButton[] = [];
+  FileList.forEach((x) => {
+    Buttons.push({
+      text: x.getElementsByTagName("td")[5].text,
+      callback_data: x.attrs["data-key"],
     });
+  });
 
-    await ctx.replyWithHTML("<b>Semestrni Tanlang: </b>", {
-      reply_markup: Markup.inlineKeyboard(Buttons).reply_markup,
-    });
-//   } catch (error) {
-//     throw
-//   }
+  await ctx.replyWithHTML("<b>🚩Semestrni Tanlang: </b>", {
+    reply_markup: Markup.inlineKeyboard(Buttons).reply_markup,
+  });
 });
+
+scene.use(
+  Composer.catch(async (err, ctx) => {
+    await ctx.replyWithHTML(`<b>Xatolik:\n${(<TelegramError>err).message}</b>`);
+    ctx.scene.leave();
+  })
+);
 
 export default scene;

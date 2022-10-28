@@ -1,7 +1,7 @@
 import { Collection, Document, ObjectId } from "mongodb";
 import { User } from "telegraf/types";
 import client from "../../DataBase/DBConnector";
-import { HemisData } from "./HemisDataModel";
+import { IHemisData } from "./HemisDataModel";
 export type UserRole = "Admin" | "Student" | "User";
 
 export interface IUser extends Document {
@@ -13,7 +13,7 @@ export interface IUser extends Document {
   StudentData?: {
     login: string;
     password: string;
-    HemisData?: HemisData;
+    HemisData?: IHemisData;
   };
   // HemisData?: Hemis/DataType;
 }

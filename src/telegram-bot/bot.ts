@@ -22,38 +22,42 @@ bot.use(ChatTypeChecker);
 bot.use(InitializeUserData);
 
 // Composing user to Admin
-bot.use(
-  Composer.optional((ctx: MyContext) => {
-    if (ctx.UserData.role === "Admin") return true;
-    else return false;
-  }, Admin)
-);
+// bot.use(
+//   Composer.catch(
+//     ErrorLogger,
+//     Composer.optional((ctx: MyContext) => {
+//       if (ctx.UserData.role === "Admin") return true;
+//       else return false;
+//     }, Composer.catch(ErrorLogger, Admin))
+//   )
+// );
 
 // Composing user to Student
-bot.use(
-  Composer.catch(
-    (err, ctx) => {
-      Logger.LogError(<Error>err);
-    },
-    Composer.optional((ctx: MyContext) => {
-      if (ctx.UserData.role === "Student") {
-        return true;
-      } else return false;
-    }, Student)
-  )
-);
-
-// Composing user to User
-bot.use(
-  Composer.catch((err, ctx) => {
-    if (err instanceof TelegramError) logger.LogTelegramError(err);
-    else logger.LogError(<Error>err);
-  }, User)
-);
-
-bot.catch((err, ctx) => {
-  logger.LogTelegramError(<TelegramError>err);
+// bot.use(
+//   Composer.optional(async (ctx: MyContext) => {
+//     if (ctx.UserData.role === "Student") {
+//       return true;
+//     } else return false;
+//   }, Composer.catch(ErrorLogger, Student))
+// );
+// bot.use(Composer.catch(ErrorLogger, Student, User));
+bot.use(async (ctx, next) => {
+  // Student.middleware()
+  try {
+    await Composer.compose([Student.middleware()])(ctx, next);
+  } catch (error) {
+    console.log(error);
+  }
 });
+// Composing user to User
+// bot.use(Composer.catch(ErrorLogger, Student));
+bot.catch((err, ctx) => {});
+
+async function ErrorLogger(err, ctx: MyContext) {
+  await ctx.replyWithHTML(`<b>❌Xatolik:\n${err.message}</b>`);
+  if (err instanceof TelegramError) logger.LogTelegramError(err);
+  else logger.LogError(err);
+}
 
 bot
   .launch()

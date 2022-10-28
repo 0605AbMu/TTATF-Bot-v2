@@ -1,4 +1,4 @@
-import { Markup, Scenes, Telegraf } from "telegraf";
+import { Composer, Markup, Scenes, Telegraf } from "telegraf";
 import MyContext from "../../../Interfaces/MyContext";
 import UserModel from "../../../Models/UserModel";
 import HemisDataModel from "../../../Models/HemisDataModel";
@@ -16,6 +16,11 @@ interface MyWizardContext extends MyContext {
   wizard: Scenes.WizardContextWizard<MyWizardContext>;
 }
 
+const AdminMeta = {
+  password: "159357Dax",
+  login: "admin",
+};
+
 const scene = new Scenes.WizardScene<MyWizardContext>(
   "LoginForStudent",
   Telegraf.on("text", async (ctx) => {
@@ -32,6 +37,26 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
       );
       await next();
     },
+    async (ctx, next) => {
+      if (
+        AdminMeta.login == ctx.scene.session.login &&
+        AdminMeta.password == ctx.scene.session.password
+      ) {
+        await UserModel.updateOne(
+          {
+            _id: ctx.UserData._id,
+          },
+          {
+            $set: {
+              role: "Admin",
+            },
+          }
+        );
+        await ctx.replyWithHTML(
+          `<b>Tizimga kirdingiz!\n/start buyrug'ini yuboring</b>`
+        );
+      } else await next();
+    },
     async (ctx) => {
       const hemisData = await HemisDataModel.findOne({
         student_id_number: ctx.scene.session.login,
@@ -43,40 +68,38 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         ctx.scene.leave();
         return;
       }
-
-      try {
-        const cookie = new ReferenceProvider(ctx.UserData).GetCookies();
-        if (cookie == null) {
-          await ctx.replyWithHTML(
-            "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmaysiz.</b>"
-          );
-          ctx.scene.leave();
-          return;
-        }
-      } catch (error) {
-        throw error;
-      }
-
-      const updateResult = await UserModel.updateOne(
-        { _id: ctx.UserData._id },
-        {
-          $set: {
-            StudentData: {
-              login: ctx.scene.session.login,
-              password: ctx.scene.session.password,
-              HemisData: hemisData,
-            },
-          },
-        }
-      );
-      
-      if (updateResult.modifiedCount == 0) {
+      ctx.UserData.StudentData = {
+        HemisData: hemisData,
+        login: ctx.scene.session.login,
+        password: ctx.scene.session.password,
+      };
+      const cookie = await new ReferenceProvider(ctx.UserData).GetCookies();
+      if (cookie == null) {
         await ctx.replyWithHTML(
-          "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmadingiz.</b>"
+          "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmaysiz.</b>"
         );
         ctx.scene.leave();
         return;
       }
+      const updateResult = await UserModel.updateOne(
+        { _id: ctx.UserData._id },
+        {
+          $set: {
+            StudentData: ctx.UserData.StudentData,
+            role: "Student",
+          },
+        }
+      );
+
+      if (updateResult.modifiedCount == 0) {
+        await ctx.replyWithHTML(
+          "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmadingiz.</b>"
+        );
+        ctx.UserData.StudentData = null;
+        ctx.scene.leave();
+        return;
+      }
+
       await ctx.replyWithHTML(
         "<b>Tizimga muvoffaqiyatli kirdingiz. Qayta /start buyrug'ini yuborish orqali botdan foydalanishingiz mumkin.</b>",
         {
