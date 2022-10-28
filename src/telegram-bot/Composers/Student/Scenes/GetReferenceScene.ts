@@ -61,7 +61,7 @@ scene.enter(async (ctx) => {
 
 scene.use(
   Composer.catch(async (err, ctx) => {
-    await ctx.replyWithHTML(`<b>Xatolik:\n${(<TelegramError>err).message}</b>`);
+    await ctx.replyWithHTML(`<b>❌Xatolik: \n${(<TelegramError>err).message}</b>`);
     ctx.scene.leave();
   })
 );

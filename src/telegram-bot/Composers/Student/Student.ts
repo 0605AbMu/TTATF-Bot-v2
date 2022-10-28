@@ -41,7 +41,8 @@ Student.hears(Home.Reference, async (ctx) => {
   try {
     await ctx.scene.enter("GetReferenceScene");
   } catch (error) {
-    await ctx.replyWithHTML(`<b>Xatolik:${error.message}</b>`);
+    ctx.scene.leave();
+    await ctx.replyWithHTML(`<b>❌Xatolik: ${error.message}</b>`);
     logger.LogError(error);
   }
 });
@@ -65,6 +66,5 @@ Student.hears(Home.Exit, async (ctx) => {
   );
 });
 
-Student.use(Composer.catch((err, ctx) => {}));
 
 export default Student;

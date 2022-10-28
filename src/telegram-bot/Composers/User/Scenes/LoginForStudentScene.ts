@@ -73,7 +73,13 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         login: ctx.scene.session.login,
         password: ctx.scene.session.password,
       };
-      const cookie = await new ReferenceProvider(ctx.UserData).GetCookies();
+      let cookie;
+      try {
+        cookie = await new ReferenceProvider(ctx.UserData).GetCookies();
+      } catch (error) {
+        ctx.scene.leave();
+        throw error;
+      }
       if (cookie == null) {
         await ctx.replyWithHTML(
           "<b>Sizning ma'lumotlaringiz topilmadi. Tizimga kira olmaysiz.</b>"
@@ -107,8 +113,8 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         }
       );
       ctx.scene.session.isSuccess = true;
-
       await ctx.scene.leave();
+      return;
     }
   )
 );
@@ -123,11 +129,5 @@ scene.leave(async (ctx) => {
     reply_markup: HomeKeyboardMarkup,
   });
 });
-
-scene.use(
-  Composer.catch((err, ctx) => {
-    ctx.scene.leave();
-  })
-);
 
 export default scene;

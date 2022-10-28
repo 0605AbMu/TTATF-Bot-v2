@@ -92,9 +92,19 @@ export class ReferenceProvider {
           },
         });
         const parsedData = HTMLParser(result.data);
-        if (!parsedData) rej(new Error("Noma'lum xatolik!"));
+        if (!parsedData)
+          rej(
+            new Error(
+              "Noma'lum xatolik! Balki HEMIS tizimidagi parolingiz yetarlicha xavfsiz emas! Agar shunday bo'lsa parolingizni almashtiring."
+            )
+          );
         const table = parsedData.querySelector("table");
-        if (!table) rej(new Error("Noma'lum xatolik!"));
+        if (!table)
+          rej(
+            new Error(
+              "Noma'lum xatolik! Balki HEMIS tizimidagi parolingiz yetarlicha xavfsiz emas! Agar shunday bo'lsa parolingizni almashtiring."
+            )
+          );
         const nodes = table
           .getElementsByTagName("tbody")[0]
           .getElementsByTagName("tr");
