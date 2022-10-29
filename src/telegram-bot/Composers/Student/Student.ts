@@ -85,7 +85,8 @@ Student.hears(Home.ChangePassword, async (ctx) => {
   try {
     await ctx.scene.enter("ChangePassword");
   } catch (error) {
-    console.log(error);
+    logger.LogError(error);
+    await ctx.replyWithHTML(`<b>Xatolik:\n${error.message}</b>`);
   }
 });
 

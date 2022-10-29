@@ -108,7 +108,7 @@ export class ReferenceProvider {
       this.Status = Status.Pending;
       if (!this.cookie) await this.GetCookies();
       try {
-        const result = await axios.get("/student/reference", {
+        const result = await axios.get("/student/reference/?get=1", {
           headers: {
             Cookie: this.cookie,
           },
