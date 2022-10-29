@@ -3,6 +3,8 @@ import https from "https";
 import Axios, { AxiosDefaults, AxiosError, AxiosResponse } from "axios";
 import { parse as HTMLParser, HTMLElement } from "node-html-parser";
 import FormData from "form-data";
+import Cookie from "cookie";
+import CookieParser from "set-cookie-parser";
 const axios = new Axios.Axios({
   baseURL: "https://student.ttatf.uz",
   httpsAgent: new https.Agent({
@@ -18,6 +20,7 @@ export enum Status {
 export class ReferenceProvider {
   public Status: Status = Status.NotStarted;
   private cookie: string[] = null;
+  private CSRFToken: { token: string; param: string };
   private User: IUser = null;
   constructor(user: IUser) {
     this.Status = Status.NotStarted;
@@ -38,22 +41,41 @@ export class ReferenceProvider {
     }
   }
 
+  private GetCsrfTokenAndParam(
+    path: string = "/dashboard/login"
+  ): Promise<{ token: string; param: string; setCookie?: string[] }> {
+    return new Promise(async (res, rej) => {
+      const response1: AxiosResponse = await axios.get(path);
+      const parsedData = HTMLParser(response1.data);
+      const token = parsedData
+        .querySelector("meta[name='csrf-token']")
+        ?.getAttribute("content");
+      const param = parsedData
+        .querySelector("meta[name='csrf-param']")
+        ?.getAttribute("content");
+      if (!param || !token)
+        rej(new Error("HEMIS tizimi ishlamayotgan bo'lishi mumkin!"));
+      this.CSRFToken = {
+        param: param,
+        token: token,
+      };
+      res({
+        token: token,
+        param: param,
+        setCookie: response1.headers["set-cookie"],
+      });
+    });
+  }
+
   private GetStudentFrontEndCookie(
     login: string,
     password: string
   ): Promise<string[]> {
     return new Promise(async (res, rej) => {
       try {
-        const response1: AxiosResponse = await axios.get("/dashboard/login");
-        const parsedData = HTMLParser(response1.data);
-        const token = parsedData
-          .querySelector("meta[name='csrf-token']")
-          ?.getAttribute("content");
-        const param = parsedData
-          .querySelector("meta[name='csrf-param']")
-          ?.getAttribute("content");
-        if (!param || !token)
-          rej(new Error("HEMIS tizimi ishlamayotgan bo'lishi mumkin!"));
+        const { param, token, setCookie } = await this.GetCsrfTokenAndParam(
+          "/dashboard/login"
+        );
         const RequestData = new FormData();
         RequestData.append("FormStudentLogin[login]", login);
         RequestData.append("FormStudentLogin[password]", password);
@@ -64,7 +86,7 @@ export class ReferenceProvider {
           {
             headers: {
               "Content-Type": "multipart/form-data",
-              Cookie: response1.headers["set-cookie"],
+              Cookie: setCookie,
             },
             maxRedirects: 0,
           }
@@ -127,6 +149,34 @@ export class ReferenceProvider {
       if (result.status != 200) rej(new Error("Bu fayl topilmadi"));
       this.Status = Status.Finished;
       res(result.data);
+    });
+  }
+
+  public ChangePassword(newPassword: string): Promise<boolean> {
+    return new Promise(async (res, rej) => {
+      await this.GetCookies();
+      const { param, token, setCookie } = await this.GetCsrfTokenAndParam(
+        "/dashboard/profile"
+      );
+      const formData = new FormData();
+      formData.append("FormStudentProfile[change_password]", 1);
+      formData.append("FormStudentProfile[password]", newPassword);
+      formData.append("FormStudentProfile[confirmation]", newPassword);
+      formData.append(
+        this.CSRFToken.param ? this.CSRFToken.param : "",
+        this.CSRFToken.token
+      );
+      setCookie.push(this.cookie.find((x) => x.indexOf("_frontendUser") != -1));
+      const response = await axios.post("/dashboard/profile/", formData, {
+        headers: {
+          Cookie: setCookie,
+        },
+        maxRedirects: 0,
+      });
+      if (response.status == 302) {
+        res(true);
+      } else
+        rej(new Error("Parolni almashtirib bo'lmadi. " + response.statusText));
     });
   }
 }

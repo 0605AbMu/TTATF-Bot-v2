@@ -3,6 +3,7 @@ export let Home = {
   Reference: "Ma'lumotnoma olish",
   EmployeeData: "Xodimlar haqida ma'lumot",
   AboutMySelf: "Ma'lumotlarim",
+  ChangePassword: "Parolni almashtirish",
   Contact: "Aloqa",
   Exit: "Chiqish",
 };

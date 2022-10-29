@@ -16,12 +16,14 @@ import { Home } from "./Constants/Buttons";
 
 // Scenes
 import GetReferenceScene from "./Scenes/GetReferenceScene";
+import ChangePassword from "./Scenes/ChangeStudentPasswordScene";
+
 import logger from "../../../logger/logger";
 
 const Student = new Composer<MyContext>();
 
 Student.use(session());
-Student.use(new Scenes.Stage([GetReferenceScene]).middleware());
+Student.use(new Scenes.Stage([GetReferenceScene, ChangePassword]).middleware());
 
 // Parol va logini mavjud ekanligini tekshiradi!
 Student.use(CheckStudentLoginAndPasswordForExists);
@@ -77,6 +79,14 @@ Manzil: ${data.address};
 Tuman: ${data.district.name};
 Viloyat: ${data.province.name};
 Holati: ${data.studentStatus.name};</b>`);
+});
+
+Student.hears(Home.ChangePassword, async (ctx) => {
+  try {
+    await ctx.scene.enter("ChangePassword");
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 export default Student;
