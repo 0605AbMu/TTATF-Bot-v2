@@ -27,7 +27,7 @@ Parol:
 ✅Kamida 1 katta harfdan iborat bo'lishi;
 ✅Kamida 1 ta raqamdan iborat bo'lishi;
 Shart!</b>`);
-        await ctx.scene.reenter();
+        await ctx.scene.leave();
         return;
       }
       await ctx.replyWithHTML("<b>⏳Iltimos biroz kuting....</b>");
@@ -54,6 +54,12 @@ Qayta /start buyrug'ini yuborish orqali tizimga qaytadan kiring.
   )
 );
 
+scene.use(
+  Telegraf.hears(/\/\w*/gm, (ctx, next) => {
+    ctx.scene.leave();
+  })
+);
+
 scene.enter(async (ctx) => {
   ctx.scene.session.provider = new ReferenceProvider(ctx.UserData);
   await ctx.replyWithHTML("<b>Yangi parol kiriting: </b>");
@@ -65,5 +71,12 @@ function PasswordStrToShowable(password: string): string {
     password.substring(password.length - 4)
   );
 }
+
+scene.use(
+  Composer.catch(async (err, ctx) => {
+    await ctx.scene.leave();
+    throw err;
+  })
+);
 
 export default scene;

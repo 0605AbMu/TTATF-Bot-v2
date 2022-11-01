@@ -28,13 +28,19 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
       {
         caption: `<b>${
           ctx.UserData.StudentData.HemisData.short_name
-        } - 📄Malumotnoma.\nBerilgan sana: ${new Date(
+        } - 📄Ma'lumotnoma.\nBerilgan sana: ${new Date(
           Date.now()
         ).toLocaleDateString()} </b>\n@${ctx.botInfo.username}`,
-        parse_mode: "HTML"
+        parse_mode: "HTML",
       }
     );
     delete ctx.scene.session.provider;
+    ctx.scene.leave();
+  })
+);
+
+scene.use(
+  Telegraf.hears(/\/\w*/gm, (ctx, next) => {
     ctx.scene.leave();
   })
 );
@@ -61,9 +67,17 @@ scene.enter(async (ctx) => {
 
 scene.use(
   Composer.catch(async (err, ctx) => {
-    await ctx.replyWithHTML(`<b>❌Xatolik: \n${(<TelegramError>err).message}</b>`);
+    await ctx.replyWithHTML(
+      `<b>❌Xatolik: \n${(<TelegramError>err).message}</b>`
+    );
     ctx.scene.leave();
   })
 );
 
+scene.use(
+  Composer.catch(async (err, ctx) => {
+    await ctx.scene.leave();
+    throw err;
+  })
+);
 export default scene;

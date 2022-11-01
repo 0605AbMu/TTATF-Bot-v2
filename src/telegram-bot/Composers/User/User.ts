@@ -1,4 +1,4 @@
-import { Composer, Markup, session, Scenes } from "telegraf";
+import { Composer, Markup, session, Scenes, Telegraf } from "telegraf";
 import MyContext from "../../Interfaces/MyContext";
 import UserModel from "../../Models/UserModel";
 
@@ -18,10 +18,6 @@ User.start(async (ctx) => {
   });
 });
 
-User.hears(buttons.Home.Kirish, async (ctx) => {
-  await ctx.scene.enter("LoginForStudent");
-});
-
 User.hears(buttons.Home.Stat, async (ctx) => {
   await ctx.replyWithHTML(`<b>📆Bugungi sana: ${new Date(
     Date.now()
@@ -30,6 +26,8 @@ User.hears(buttons.Home.Stat, async (ctx) => {
 👨‍🎓Talabalar soni: ${await UserModel.count({ role: "Student" })} ta;</b>`);
 });
 
-User.use(Composer.catch((err, ctx) => {}));
+User.hears(buttons.Home.Kirish, async (ctx) => {
+  await ctx.scene.enter("LoginForStudent");
+});
 
 export default User;

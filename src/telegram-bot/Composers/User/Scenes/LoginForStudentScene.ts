@@ -119,6 +119,12 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
   )
 );
 
+scene.use(
+  Telegraf.hears(/\/\w*/gm, (ctx, next) => {
+    ctx.scene.leave();
+  })
+);
+
 scene.enter(async (ctx) => {
   await ctx.replyWithHTML("<b>Loginingizni yuboring: </b>");
 });
@@ -129,5 +135,13 @@ scene.leave(async (ctx) => {
     reply_markup: HomeKeyboardMarkup,
   });
 });
+
+scene.use(
+  Composer.catch(async (err, ctx) => {
+    ctx.scene.session.isSuccess = false;
+    await ctx.scene.leave();
+    throw err;
+  })
+);
 
 export default scene;

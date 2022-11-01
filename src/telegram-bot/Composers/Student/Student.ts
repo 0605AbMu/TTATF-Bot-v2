@@ -43,7 +43,6 @@ Student.hears(Home.Reference, async (ctx) => {
   try {
     await ctx.scene.enter("GetReferenceScene");
   } catch (error) {
-    ctx.scene.leave();
     await ctx.replyWithHTML(`<b>❌Xatolik: ${error.message}</b>`);
     logger.LogError(error);
   }
