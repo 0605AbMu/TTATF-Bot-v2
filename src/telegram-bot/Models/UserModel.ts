@@ -14,8 +14,17 @@ export interface IUser extends Document {
     login: string;
     password: string;
     HemisData?: IHemisData;
+    RentData?: {
+      liveLocation?: {
+        googleLocation?: string;
+        address: string;
+      };
+      StirNumber: number;
+      RentAmount: number;
+    };
+    phone?: string;
+    email?: string;
   };
-  // HemisData?: Hemis/DataType;
 }
 
 const UserModel: Collection<IUser> = client

@@ -22,28 +22,27 @@ bot.use(ChatTypeChecker);
 bot.use(InitializeUserData);
 
 // Composing user to Admin
-bot.use(
-  Composer.catch(
-    ErrorLogger,
-    Composer.optional((ctx: MyContext) => {
-      if (ctx.UserData.role === "Admin") return true;
-      else return false;
-    }, Composer.catch(ErrorLogger, Admin))
-  )
-);
+// bot.use(
+//   Composer.catch(
+//     ErrorLogger,
+//     Composer.optional((ctx: MyContext) => {
+//       if (ctx.UserData.role === "Admin") return true;
+//       else return false;
+//     }, Composer.catch(ErrorLogger, Admin))
+//   )
+// );
 
-// Composing user to Student
-bot.use(
-  Composer.optional(async (ctx: MyContext) => {
-    if (ctx.UserData.role === "Student") {
-      return true;
-    } else return false;
-  }, Student)
-);
-
-// Composing user to User
-bot.use(User);
-
+bot.use(async (ctx, next) => {
+  try {
+    if (ctx.UserData.role == "Student")
+      Composer.compose([Student.middleware()])(ctx, next);
+    else if (ctx.UserData.role == "Admin")
+      Composer.compose([Admin.middleware()])(ctx, next);
+    else Composer.compose([User.middleware()])(ctx, next);
+  } catch (error) {
+    throw error;
+  }
+});
 
 async function ErrorLogger(err, ctx: MyContext) {
   await ctx.replyWithHTML(`<b>❌Xatolik:\n${err.message}</b>`);

@@ -13,7 +13,7 @@ User.use(session());
 User.use(new Scenes.Stage([LoginForStudentScene]).middleware());
 
 User.start(async (ctx) => {
-  ctx.replyWithHTML("<b>👋Assalomu alaykum. Xush kelibsiz!</b>", {
+  await ctx.replyWithHTML("<b>👋Assalomu alaykum. Xush kelibsiz!</b>", {
     reply_markup: HomeKeyboardMarkup,
   });
 });

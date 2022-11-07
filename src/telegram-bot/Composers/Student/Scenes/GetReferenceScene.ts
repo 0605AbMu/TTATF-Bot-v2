@@ -1,4 +1,11 @@
-import { Composer, Markup, Scenes, Telegraf, TelegramError } from "telegraf";
+import {
+  Composer,
+  Context,
+  Markup,
+  Scenes,
+  Telegraf,
+  TelegramError,
+} from "telegraf";
 import { InlineKeyboardButton } from "telegraf/types";
 import MyContext from "../../../Interfaces/MyContext";
 import { ReferenceProvider } from "../../../Services/ReferenceProvider";

@@ -67,9 +67,9 @@ Student.hears(Home.Exit, async (ctx) => {
   );
 });
 
-Student.hears(Home.AboutMySelf, (ctx) => {
+Student.hears(Home.AboutMySelf, async (ctx, next) => {
   const data = ctx.UserData.StudentData.HemisData;
-  ctx.replyWithHTML(`<b>F.I.O: ${data.full_name};
+  const s = `<b>F.I.O: ${data.full_name};
 Login: ${data.student_id_number};
 O'rtacha GPA: ${data.avg_gpa};
 Kredit: ${data.total_credit};
@@ -77,15 +77,23 @@ Kurs: ${data.level.name};
 Manzil: ${data.address};
 Tuman: ${data.district.name};
 Viloyat: ${data.province.name};
-Holati: ${data.studentStatus.name};</b>`);
-});
-
-Student.hears(Home.ChangePassword, async (ctx) => {
+Holati: ${data.studentStatus.name};</b>`;
   try {
-    await ctx.scene.enter("ChangePassword");
+    if (ctx.UserData.StudentData.HemisData.image != "")
+      await ctx.replyWithPhoto(
+        {
+          url: ctx.UserData.StudentData.HemisData.image,
+          filename: ctx.UserData.StudentData.HemisData.short_name,
+        },
+        {
+          caption: s,
+          parse_mode: "HTML",
+          reply_to_message_id: ctx.message.message_id,
+        }
+      );
+    else await ctx.replyWithHTML(s);
   } catch (error) {
-    logger.LogError(error);
-    await ctx.replyWithHTML(`<b>Xatolik:\n${error.message}</b>`);
+    throw error;
   }
 });
 
