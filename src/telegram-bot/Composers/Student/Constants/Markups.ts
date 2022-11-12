@@ -21,5 +21,5 @@ export let UpdateStudentDataMarkup = Markup.inlineKeyboard([
   {
     text: "Ma'lumotlarimni yangilash",
     callback_data: "updateMyData",
-  },
+  }
 ]);
