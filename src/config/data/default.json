@@ -7,5 +7,6 @@
   "TELEGRAM_BOT_TOKEN": "2133608433:AAGvJ9kd6YKLM8oYGtxm1vGl8WUoJ-7yeYg",
   "LOG_PATH": "logs/",
   "HEMIS_API_URL": "https://student.ttatf.uz/rest/v1/",
-  "BEARER_TOKEN_FOR_HEMIS": "54uiN7TQy6ans_8YXoxaTRnT5dHByB4La"
+  "BEARER_TOKEN_FOR_HEMIS": "54uiN7TQy6ans_8YXoxaTRnT5dHByB4La",
+  "LAST_AGGREMENT_FILE_ORDER": 894
 }

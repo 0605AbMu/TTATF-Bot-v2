@@ -3,6 +3,7 @@ import Config from "../config/Config";
 import Logger from "../logger/logger";
 import MyContext from "./Interfaces/MyContext";
 import logger from "../logger/logger";
+import https from "https";
 
 import Admin from "./Composers/Admin/Admin";
 import Student from "./Composers/Student/Student";
@@ -12,7 +13,15 @@ import User from "./Composers/User/User";
 import InitializeUserData from "./Middlewares/InitializeUserData";
 import ChatTypeChecker from "./Middlewares/ChatTypeChecker";
 
-const bot = new Telegraf<MyContext>(Config.TELEGRAM_BOT_TOKEN);
+const bot = new Telegraf<MyContext>(Config.TELEGRAM_BOT_TOKEN, {
+  telegram: {
+    attachmentAgent: new https.Agent({
+      keepAlive: true,
+      keepAliveMsecs: 10000,
+      rejectUnauthorized: false,
+    }),
+  },
+});
 
 bot.use(session());
 
@@ -40,7 +49,8 @@ bot.use(async (ctx, next) => {
       Composer.compose([Admin.middleware()])(ctx, next);
     else Composer.compose([User.middleware()])(ctx, next);
   } catch (error) {
-    throw error;
+    console.log(error);
+    // throw error;
   }
 });
 

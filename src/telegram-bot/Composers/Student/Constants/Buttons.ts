@@ -7,3 +7,4 @@ export let Home = {
   Contact: "Aloqa",
   Exit: "Chiqish",
 };
+

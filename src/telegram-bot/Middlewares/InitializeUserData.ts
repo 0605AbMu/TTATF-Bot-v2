@@ -1,5 +1,6 @@
 import MyContext from "../Interfaces/MyContext";
 import UserModel, { IUser } from "../Models/UserModel";
+import StudentModel, { IStudent } from "../Models/StudentModel";
 
 async function InitializeUserData(ctx: MyContext, next) {
   let User: IUser = await UserModel.findOne({
@@ -11,11 +12,18 @@ async function InitializeUserData(ctx: MyContext, next) {
       role: "User",
       registratedDate: new Date(Date.now()),
       telegamUser: ctx.from,
-      HemisData: null
+      StudentData: null,
     };
     User._id = await (await UserModel.insertOne(User)).insertedId;
   }
-  ctx.UserData = User;
+
+  ctx.UserData = {
+    registratedDate: User.registratedDate,
+    role: User.role,
+    telegamUser: User.telegamUser,
+    _id: User._id,
+    StudentData: User.StudentData,
+  };
   next();
 }
 

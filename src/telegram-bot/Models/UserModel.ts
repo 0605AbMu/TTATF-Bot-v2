@@ -2,29 +2,16 @@ import { Collection, Document, ObjectId } from "mongodb";
 import { User } from "telegraf/types";
 import client from "../../DataBase/DBConnector";
 import { IHemisData } from "./HemisDataModel";
+import { Location, Contact } from "telegraf/typings/core/types/typegram";
+import { Student } from "./StudentModel";
 export type UserRole = "Admin" | "Student" | "User";
 
 export interface IUser extends Document {
   telegamUser: User;
   registratedDate: Date;
   role: UserRole;
-  ///HemisData
   _id?: ObjectId;
-  StudentData?: {
-    login: string;
-    password: string;
-    HemisData?: IHemisData;
-    RentData?: {
-      liveLocation?: {
-        googleLocation?: string;
-        address: string;
-      };
-      StirNumber: number;
-      RentAmount: number;
-    };
-    phone?: string;
-    email?: string;
-  };
+  StudentData?: Student;
 }
 
 const UserModel: Collection<IUser> = client

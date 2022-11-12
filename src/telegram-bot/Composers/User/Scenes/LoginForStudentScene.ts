@@ -4,6 +4,8 @@ import UserModel from "../../../Models/UserModel";
 import HemisDataModel from "../../../Models/HemisDataModel";
 import { ReferenceProvider } from "../../../Services/ReferenceProvider";
 import { HomeKeyboardMarkup } from "../Constants/Markups";
+import StudentModel, { Student } from "../../../Models/StudentModel";
+import { ObjectId } from "mongodb";
 
 interface MySessionData extends Scenes.WizardSessionData {
   login: string;
@@ -57,10 +59,12 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         );
       } else await next();
     },
+
     async (ctx) => {
       const hemisData = await HemisDataModel.findOne({
         student_id_number: ctx.scene.session.login,
       });
+
       if (hemisData == null) {
         await ctx.replyWithHTML(
           "<b>Bunday login va parolga ega talaba topilmadi!</b>"
@@ -68,11 +72,42 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         ctx.scene.leave();
         return;
       }
-      ctx.UserData.StudentData = {
-        HemisData: hemisData,
+
+      let student = await StudentModel.findOne({
         login: ctx.scene.session.login,
-        password: ctx.scene.session.password,
-      };
+      });
+
+      if (!student) {
+        student = new Student();
+        student = {
+          birthDate: null,
+          email: null,
+          gender: null,
+          HemisData: hemisData,
+          jshshir: null,
+          login: ctx.scene.session.login,
+          password: ctx.scene.session.password,
+          phone: null,
+          rent: {
+            amount: null,
+            location: {
+              geo: null,
+            },
+          },
+          stir: 1233,
+          tgPhone: null,
+          _id: new ObjectId(),
+        };
+        ctx.UserData.StudentData = student;
+        ctx.UserData.StudentData._id = await (
+          await StudentModel.insertOne(student)
+        ).insertedId;
+      } else {
+        student.password = ctx.scene.session.password;
+        student.HemisData = hemisData;
+        ctx.UserData.StudentData = student;
+        await StudentModel.updateOne({ _id: student._id }, { $set: student });
+      }
       let cookie;
       try {
         cookie = await new ReferenceProvider(ctx.UserData).GetCookies();
