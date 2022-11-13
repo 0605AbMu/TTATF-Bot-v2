@@ -19,5 +19,5 @@ export async function CheckStudentLoginAndPasswordForExists(
     );
     return;
   }
-  next();
+  next(); 
 }
