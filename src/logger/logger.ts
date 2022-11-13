@@ -13,12 +13,6 @@ class Logger {
     this.logger = winston.createLogger({
       // format: winston.format.colorize().,
       transports: [
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.cli(),
-            winston.format.colorize()
-          ),
-        }),
         new winston.transports.File({
           filename: this.LogPath,
           format: winston.format.combine(
@@ -28,6 +22,17 @@ class Logger {
         }),
       ],
     });
+    if (Config.type == "Development" || Config.type == "Default")
+      if (Config)
+        this.logger.add(
+          new winston.transports.Console({
+
+            format: winston.format.combine(
+              winston.format.cli(),
+              winston.format.colorize()
+            ),
+          })
+        );
   }
 
   // Log Any Error

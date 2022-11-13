@@ -45,25 +45,30 @@ export class ReferenceProvider {
     path: string = "/dashboard/login"
   ): Promise<{ token: string; param: string; setCookie?: string[] }> {
     return new Promise(async (res, rej) => {
-      const response1: AxiosResponse = await axios.get(path);
-      const parsedData = HTMLParser(response1.data);
-      const token = parsedData
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content");
-      const param = parsedData
-        .querySelector("meta[name='csrf-param']")
-        ?.getAttribute("content");
-      if (!param || !token)
-        rej(new Error("HEMIS tizimi ishlamayotgan bo'lishi mumkin!"));
-      this.CSRFToken = {
-        param: param,
-        token: token,
-      };
-      res({
-        token: token,
-        param: param,
-        setCookie: response1.headers["set-cookie"],
-      });
+      try {
+        let response1: AxiosResponse;
+        response1 = await axios.get(path);
+        const parsedData = HTMLParser(response1.data);
+        const token = parsedData
+          .querySelector("meta[name='csrf-token']")
+          ?.getAttribute("content");
+        const param = parsedData
+          .querySelector("meta[name='csrf-param']")
+          ?.getAttribute("content");
+        if (!param || !token)
+          throw new Error("HEMIS tizimi ishlamayotgan bo'lishi mumkin!");
+        this.CSRFToken = {
+          param: param,
+          token: token,
+        };
+        res({
+          token: token,
+          param: param,
+          setCookie: response1.headers["set-cookie"],
+        });
+      } catch (error) {
+        rej(error);
+      }
     });
   }
 
@@ -92,8 +97,7 @@ export class ReferenceProvider {
           }
         );
         if (response2.headers["set-cookie"] === undefined) {
-          rej(new Error("Bunday login yoki parolga ega talaba topilmadi!"));
-          return;
+          throw new Error("Bunday login yoki parolga ega talaba topilmadi!");
         }
         this.cookie = response2.headers["set-cookie"];
         res(response2.headers["set-cookie"]);

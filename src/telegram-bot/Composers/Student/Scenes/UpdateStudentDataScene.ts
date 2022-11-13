@@ -1,4 +1,4 @@
-import { Composer, Markup, Scenes, Telegraf } from "telegraf";
+import { Composer, Context, Markup, Scenes, Telegraf } from "telegraf";
 import MyContext from "../../../Interfaces/MyContext";
 import { ReferenceProvider } from "../../../Services/ReferenceProvider";
 import PasswordChecker from "../../../Services/PasswordChecker";
@@ -8,11 +8,12 @@ import { InlineMarkupOnStudentDataUpdating } from "../Constants/Markups";
 
 import AggMakerService from "../../../Services/Aggrement Maker Service/service";
 import AggFileBucket from "../../../Models/AggrementFilesBucket";
-import { InlineKeyboardButton, Message } from "telegraf/types";
-import StudentModel, { IStudent } from "../../../Models/StudentModel";
-
+import { InlineKeyboardButton, KeyboardButton, Message } from "telegraf/types";
+import StudentModel, { IStudent, Student } from "../../../Models/StudentModel";
+import { HomeMarkup } from "../Constants/Markups";
+import { ArrayChunk } from "../Util/Array";
 interface MySessionData extends Scenes.WizardSessionData {
-  //   provider: ReferenceProvider;
+    provider: ReferenceProvider;
   regex?: RegExp;
   stepIndex: number;
   targetMessage: Message;
@@ -27,85 +28,208 @@ interface MyWizardContext extends MyContext {
 type TStep = {
   name: string;
   message: Function;
-  regex: RegExp;
+  checkMethod: Function;
   paramName: string;
-  errorMessage: string;
+  replyMarkup?: KeyboardButton[];
 };
 
 const Steps: TStep[] = [
   {
     name: "Tug'ulgan sanangiz",
-    message: (e, errorMessage) =>
-      `${
-        errorMessage ? errorMessage + "\n" : ""
-      }Tug'ulgan sanangizni MM.DD.YYYY formatda kiriting(${e ?? "Noma'lum"}):`,
-    regex: new RegExp(/^([0-9]{2}.[0-9]{2}.[0-9]{4})$/gm),
+    message: (e) =>
+      `Tug'ulgan sanangizni kiriting[DD.MM.YYYY](${e ?? "Noma'lum"}):`,
     paramName: "birthDate",
-    errorMessage: null,
+    checkMethod: <T extends string>(s: T): boolean => {
+      let b = new RegExp(/^([0-9]{2}.[0-9]{2}.[0-9]{4})$/gm).test(s);
+      if (!b) return b;
+      const [d, m, y] = s.split(".").map((x) => Number.parseInt(x));
+      if (d > 0 && d <= 31 && m > 0 && m <= 12 && y > 1900 && y < 2100)
+        return true;
+      else return false;
+    },
   },
-];
-
-let keyboard: InlineKeyboardButton[][] = [
-  Steps.map((x) => {
-    return {
-      text: x.name,
-      callback_data: x.paramName,
-    };
-  }),
-  [{ text: "♻️Saqlash", callback_data: "save" }],
+  {
+    name: "Jins",
+    message: (e) => `Jinsingizni tanlang[Erkak | Ayol](${e ?? "Noma'lum"}):`,
+    paramName: "gender",
+    checkMethod: <T extends string>(s: T): boolean => {
+      if (s == "Erkak" || s == "Ayol") return true;
+      else return false;
+    },
+    replyMarkup: ["Erkak", "Ayol"],
+  },
+  {
+    name: "JSHSHIR",
+    message: (e) =>
+      `JSHSHIR raqamingizni yuboring[14 ta raqam](${e ?? "Noma'lum"}):`,
+    paramName: "jshshir",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return new RegExp(/^([0-9]{14})$/gm).test(s);
+    },
+    
+  },
+  {
+    name: "Ijara uy narxi",
+    message: (e) =>
+      `Ijarada turgan uyingizning narxini yuboring[faqat raqamlarda va so'mda](${
+        e ?? "Noma'lum"
+      }):`,
+    paramName: "rent.amount",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return new RegExp(/^([0-9]+)$/gm).test(s);
+    },
+  },
+  {
+    name: "Telefon raqam",
+    message: (e) =>
+      `Telefon raqamingizni yuboring[+998911234567](${e ?? "Noma'lum"}):`,
+    paramName: "phone",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return (
+        new RegExp(/^([0-9]{9})$/gm).test(s) ||
+        new RegExp(/^\+998([0-9]{9})$/gm).test(s)
+      );
+    },
+  },
+  {
+    name: "Ijarada turgan shahringiz",
+    message: (e) => `Qaysi shahrda ijaraga turasiz?(${e ?? "Noma'lum"}):`,
+    paramName: "rent.location.city",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return new RegExp(/^([a-zA-z0-9@#$%^&*`'"><>< ]+)$/gm).test(s);
+    },
+  },
+  {
+    name: "Ijara uy manzili",
+    message: (e) =>
+      `Ijarada turgan uyingizning manzilini yuboring(${e ?? "Noma'lum"}):`,
+    paramName: "rent.location.address",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return new RegExp(/^([a-zA-z0-9@#$%^&*`'"><>< ]+)$/gm).test(s);
+    },
+  },
+  {
+    name: "STIR",
+    message: (e) =>
+      `STIR raqamingizni yuboring[faqat raqamlarda](${e ?? "Noma'lum"}):`,
+    paramName: "rent.stir",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return new RegExp(/^([0-9]+)$/gm).test(s);
+    },
+  },
+  {
+    name: "Telegram raqami",
+    message: (e) =>
+      `Telegram raqamingizni ulashing[faqat tugma orqali](${e ?? "Noma'lum"}):`,
+    paramName: "tgPhone",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return true;
+    },
+    replyMarkup: [Markup.button.contactRequest("Telefon raqamimni ulashish")],
+  },
+  {
+    name: "E-mail",
+    message: (e) => `E-mail manzilingizni yuboring(${e ?? "Noma'lum"}):`,
+    paramName: "email",
+    checkMethod: <T extends string>(s: T): boolean => {
+      return new RegExp(/^([a-zA-z0-9@#$%^&*`'"><>< ]+@[a-zA-z0-9]+\.[a-zA-Z]+)$/gm).test(s);
+    },
+  },
 ];
 
 const scene = new Scenes.WizardScene<MyWizardContext>(
   "UpdateStudentData",
   new Composer<MyWizardContext>()
-    .action("save", async (ctx) => {})
     .on("callback_query", async (ctx) => {
-      let step = Steps.find((x) => (x.paramName = ctx.callbackQuery.data));
-      if (!step) ctx.scene.reenter();
+      let step = Steps.find((x) => x.paramName == ctx.callbackQuery.data);
+      if (!step) {
+        ctx.replyWithHTML("<b>❌Noma'lum xatolik</b>");
+        ctx.scene.leave();
+        return;
+      }
+      await ctx.editMessageReplyMarkup({ inline_keyboard: new Array() });
       ctx.scene.session.currentStep = step;
-      await ctx.replyWithHTML(
-        step.message(
-          ctx.UserData.StudentData?.[step.paramName],
-          step.errorMessage
-        ),
-        {
-          reply_markup: Markup.inlineKeyboard([
-            { text: "Bekor qilish", callback_data: "cancel" },
-          ]).reply_markup,
-        }
-      );
+      ctx
+        .replyWithHTML(
+          `<b> ${step.message(ctx.UserData.StudentData[step.paramName])}</b>`,
+          {
+            reply_markup: Markup.keyboard([
+              step.replyMarkup ?? [],
+              ["❌Bekor qilish"],
+            ]).resize(true).reply_markup,
+          }
+        )
+        .then((x) => {
+          setTimeout(() => {
+            ctx.deleteMessage(x.message_id);
+            ctx.scene.leave();
+          }, 60000);
+        });
       ctx.wizard.next();
-    }),
-  new Composer<MyWizardContext>()
-    .action("cancel", async (ctx) => {
-      ctx.deleteMessage();
-      ctx.scene.reenter();
     })
-    .on("text", async (ctx) => {
+    .on("message", async (ctx) => {
+      ctx.scene.leave();
+    }),
+
+  new Composer<MyWizardContext>()
+    .hears("❌Bekor qilish", async (ctx) => {
+      ctx.replyWithHTML("<b>Bekor qilindi!</b>", {
+        reply_markup: HomeMarkup,
+      });
+      ctx.scene.leave();
+    })
+    .on(["text"], async (ctx) => {
       let step = ctx.scene.session.currentStep;
-      if (!step) ctx.scene.reenter();
-      if (step.regex)
-        if (!step.regex.test(ctx.message.text)) {
+      if (!step) ctx.scene.leave();
+      if (step.checkMethod)
+        if (!step.checkMethod(ctx.message.text)) {
           ctx
-            .replyWithHTML("<b>Noto'g'ri formatda ma'lumot yubordingiz: </b>")
+            .replyWithHTML("<b>⚠️Noto'g'ri formatda ma'lumot yubordingiz</b>")
             .catch()
             .then((res) =>
               setTimeout(() => {
                 ctx.deleteMessage(res.message_id).catch();
               }, 3000)
             );
-          ctx.telegram.editMessageReplyMarkup(
-            ctx.scene.session.targetMessage.chat.id,
-            ctx.scene.session.targetMessage.message_id,
-            undefined,
-            {
-              inline_keyboard: keyboard,
-            }
-          );
+          return;
         }
-      ctx.UserData.StudentData[step.paramName] = ctx.message.text;
-      ctx.deleteMessage().catch();
-      ctx.scene.reenter();
+      ctx.UserData.StudentData = (
+        await StudentModel.findOneAndUpdate(
+          { _id: ctx.UserData.StudentData._id },
+          { $set: { [step.paramName]: ctx.message.text } },
+          { upsert: true, returnDocument: "after" }
+        )
+      ).value;
+      await UserModel.updateOne(
+        { _id: ctx.UserData._id },
+        { $set: ctx.UserData },
+        { upsert: true }
+      );
+      ctx.replyWithHTML("<b>✅Ma'lumotlaringiz saqlandi</b>", {
+        reply_markup: HomeMarkup,
+      });
+      ctx.scene.leave();
+    })
+    .on("contact", async (ctx) => {
+      let step = ctx.scene.session.currentStep;
+      if (!step) ctx.scene.leave();
+      ctx.UserData.StudentData[step.paramName] = ctx.message.contact;
+      ctx.UserData.StudentData = (
+        await StudentModel.findOneAndUpdate(
+          { _id: ctx.UserData.StudentData._id },
+          { $set: { [step.paramName]: ctx.message.contact } },
+          { upsert: true, returnDocument: "after" }
+        )
+      ).value;
+      await UserModel.updateOne(
+        { _id: ctx.UserData._id },
+        { $set: ctx.UserData },
+        { upsert: true }
+      );
+      ctx.replyWithHTML("<b>✅Ma'lumotlaringiz saqlandi</b>", {
+        reply_markup: HomeMarkup,
+      });
+      ctx.scene.leave();
     })
 );
 
@@ -122,38 +246,18 @@ scene.use(
 );
 
 scene.enter(async (ctx) => {
+  let keyboard: InlineKeyboardButton[] = Steps.map((x) => {
+    return {
+      text: "✏️" + x.name,
+      callback_data: x.paramName,
+    };
+  });
   ctx
     .editMessageReplyMarkup({
-      inline_keyboard: keyboard,
+      inline_keyboard: ArrayChunk(keyboard, 3),
     })
     .catch();
-  ctx.scene.session.targetMessage = ctx.message;
 });
-
-// scene.enter(async (ctx, next) => {
-//   if (!ctx.scene.session.stepIndex) ctx.scene.session.stepIndex = 0;
-//   let step = Steps[ctx.scene.session.stepIndex];
-//   console.log(ctx.session.__scenes.targetMessage);
-//   if (ctx.scene.session.targetMessage)
-//     await ctx.telegram.editMessageText(
-//       ctx.scene.session.targetMessage.chat.id,
-//       ctx.scene.session.targetMessage.message_id,
-//       undefined,
-//       step.message(ctx.UserData.StudentData[step.paramName], step.errorMessage),
-//       {
-//         parse_mode: "HTML",
-//         reply_markup: InlineMarkupOnStudentDataUpdating.reply_markup,
-//       }
-//     );
-//   else {
-//     ctx.scene.session.targetMessage = await ctx.replyWithHTML(
-//       step.message(ctx.UserData.StudentData[step.paramName], step.errorMessage),
-//       {
-//         reply_markup: InlineMarkupOnStudentDataUpdating.reply_markup,
-//       }
-//     );
-//   }
-// });
 
 scene.use(
   Composer.catch(async (err, ctx) => {

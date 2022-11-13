@@ -52,6 +52,7 @@
     "mongodb": "^4.10.0",
     "mongoose": "^6.6.5",
     "node-html-parser": "^6.1.1",
+    "office-to-pdf": "^4.0.0",
     "pino": "^8.6.1",
     "qrcode": "^1.5.1",
     "set-cookie-parser": "^2.5.1",

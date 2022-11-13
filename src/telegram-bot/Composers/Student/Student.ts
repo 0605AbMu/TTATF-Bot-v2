@@ -1,6 +1,11 @@
 import { Composer, Markup, Scenes, session } from "telegraf";
 import MyContext from "../../Interfaces/MyContext";
 import UserModel from "../../Models/UserModel";
+import * as MStudent from "../../Models/StudentModel";
+import AggrementFilesBucket from "../../Models/AggrementFilesBucket";
+import logger from "../../../logger/logger";
+import toPdf from "office-to-pdf";
+// toPdf()
 
 //Middlewares
 import { CheckStudentLoginAndPasswordForExists } from "./Middlewares/CheckHemisDataOfStudent";
@@ -11,13 +16,16 @@ import { HomeMarkup, UpdateStudentDataMarkup } from "./Constants/Markups";
 // Buttons
 import { Home } from "./Constants/Buttons";
 
+// Services
+import AggrementMaker from "../../Services/Aggrement Maker Service/service";
+
 // Scenes
 import GetReferenceScene from "./Scenes/GetReferenceScene";
 import ChangePassword from "./Scenes/ChangeStudentPasswordScene";
 import GetAggrementDocumentScene from "./Scenes/GetAggrementDocumentScene";
 import UpdateStudentDataScene from "./Scenes/UpdateStudentDataScene";
-
-import logger from "../../../logger/logger";
+import { ObjectId } from "mongodb";
+import { devNull } from "os";
 
 const Student = new Composer<MyContext>();
 
@@ -26,7 +34,7 @@ Student.use(
   new Scenes.Stage([
     GetReferenceScene,
     ChangePassword,
-    GetAggrementDocumentScene,
+    // GetAggrementDocumentScene,
     UpdateStudentDataScene,
   ]).middleware()
 );
@@ -77,12 +85,14 @@ Student.hears(Home.AboutMySelf, async (ctx, next) => {
   const s = `<b>F.I.O: ${data.full_name};
 Login: <code>${data.student_id_number}</code>;
 🔵-- <code>Shaxsiy Ma'lumotlar</code> --
-Tug'ulgan sanasi: ${privateData.birthDate?.toDateString() ?? "❌noma'lum"};
+Tug'ulgan sanasi: ${privateData.birthDate ?? "❌noma'lum"};
 Jinsi: ${privateData.gender ?? "❌noma'lum"};
 Ijaradagi uy joylashuvi: ${
     privateData.rent
       ? `${privateData.rent?.location?.city ?? "❌noma'lum"}, ${
-          privateData.rent?.location?.street ?? "❌noma'lum"
+          privateData.rent?.location?.street ??
+          privateData.rent?.location?.address ??
+          "❌noma'lum"
         }`
       : "❌noma'lum"
   };
@@ -102,33 +112,135 @@ Manzil: ${data.address};
 Tuman: ${data.district.name};
 Viloyat: ${data.province.name};
 Holati: ${data.studentStatus.name};
+
+<code>⚠️Eslatma: Ma'lumotlar bilan bog'liq barcha jarayonlardagi xabarlar(ko'rish, yangilash)
+ma'lum vaqtda o'chirib yuboriladi!</code>
 </b>`;
 
   try {
     if (ctx.UserData.StudentData.HemisData.image != "")
-      await ctx.replyWithPhoto(
-        {
-          url: ctx.UserData.StudentData.HemisData.image,
-          filename: ctx.UserData.StudentData.HemisData.short_name,
-        },
-        {
-          caption: s,
-          parse_mode: "HTML",
-          reply_to_message_id: ctx.message.message_id,
-          reply_markup: UpdateStudentDataMarkup.reply_markup,
-        }
-      );
+      await ctx
+        .replyWithPhoto(
+          {
+            url: ctx.UserData.StudentData.HemisData.image,
+            filename: ctx.UserData.StudentData.HemisData.short_name,
+          },
+          {
+            caption: s,
+            parse_mode: "HTML",
+            reply_to_message_id: ctx.message.message_id,
+            reply_markup: UpdateStudentDataMarkup.reply_markup,
+          }
+        )
+        .then((x) => {
+          setTimeout(() => {
+            ctx.deleteMessage(x.message_id).catch();
+          }, 60000);
+        })
+        .catch(async (e) => {
+          await ctx
+            .replyWithHTML(s, {
+              reply_markup: UpdateStudentDataMarkup.reply_markup,
+            })
+            .then((x) => {
+              setTimeout(() => {
+                ctx.deleteMessage(x.message_id).catch();
+              }, 60000);
+            });
+        });
     else
-      await ctx.replyWithHTML(s, {
-        reply_markup: UpdateStudentDataMarkup.reply_markup,
-      });
+      await ctx
+        .replyWithHTML(s, {
+          reply_markup: UpdateStudentDataMarkup.reply_markup,
+        })
+        .then((x) => {
+          setTimeout(() => {
+            ctx.deleteMessage(x.message_id).catch();
+          }, 60000);
+        });
   } catch (error) {
     throw error;
   }
 });
 
 Student.hears(Home.Shartnoma, async (ctx) => {
-  await ctx.scene.enter("GetAggrementDocument", { paramName: "ctx" });
+  let date = new Date(Date.now());
+  let experiedAt = new Date(date);
+  experiedAt.setDate(7);
+  experiedAt.setUTCHours(0, 0, 0);
+  let startAt = new Date(experiedAt);
+  startAt.setDate(1);
+  startAt.setUTCHours(0, 0, 0);
+  console.log(experiedAt, startAt);
+
+  let file = await (
+    await AggrementFilesBucket.find({
+      uploadDate: { $gte: startAt, $lte: experiedAt },
+      "metadata.studentId": ctx.UserData.StudentData.login,
+    }).toArray()
+  ).at(0);
+
+  if (file) {
+    await ctx.replyWithDocument(
+      {
+        source: AggrementFilesBucket.openDownloadStream(file._id),
+        filename: `Ijara shartnoma arizasi-${
+          ctx.UserData.StudentData?.HemisData?.short_name ?? "unknown"
+        }${file.metadata.extension}`,
+      },
+      {
+        caption: `<b>📄${
+          ctx.UserData.StudentData.HemisData.short_name
+        } | Ijara shartnoma arizasi.\nBerilgan sana: ${file.uploadDate.toLocaleDateString()}</b>`,
+        parse_mode: "HTML",
+      }
+    );
+    return;
+  }
+
+  if (experiedAt < date) {
+    await ctx.replyWithHTML(
+      "<b>Ijara shartnoma xizmati har oyning 7-sanasiga qadar ish faoliyatida bo'ladi</b>"
+    );
+    return;
+  }
+  // Check period for service
+  if (!checkNeededData(ctx.UserData.StudentData)) {
+    await ctx.replyWithHTML(
+      `<b>Sizda ma'lumotlar yetarli emas!. Barcha ma'lumotlarni to'ldirib yana urinib ko'ring</b>`
+    );
+    return;
+  }
+  await ctx.replyWithHTML("<b>Biroz kuting ma'lumotlar tayyorlanyapdi</b>");
+  try {
+    let fileId = await AggrementMaker.CreateDocumentAsync(
+      ctx.UserData.StudentData
+    );
+
+    file = await (
+      await AggrementFilesBucket.find({ _id: fileId }).toArray()
+    ).at(0);
+    if (file == null) {
+      throw new Error("Ariza hujjatingiz topilmadi!");
+    }
+    await ctx.replyWithDocument(
+      {
+        source: AggrementFilesBucket.openDownloadStream(fileId),
+        filename: `Ijara shartnoma arizasi-${
+          ctx.UserData.StudentData?.HemisData?.short_name ?? "unknown"
+        }${file.metadata.extension}`,
+      },
+      {
+        caption: `<b>📄${
+          ctx.UserData.StudentData.HemisData.short_name
+        } | Ijara shartnoma arizasi.\nBerilgan sana: ${file.uploadDate.toLocaleDateString()}</b>`,
+        parse_mode: "HTML",
+      }
+    );
+  } catch (error) {
+    await ctx.replyWithHTML(`<b>❌Xatolik:\n${error.message}</b>`);
+    logger.LogError(error);
+  }
 });
 
 Student.action("updateMyData", async (ctx) => {
@@ -136,3 +248,23 @@ Student.action("updateMyData", async (ctx) => {
 });
 
 export default Student;
+
+//where data need to aggrement document, it checks it
+function checkNeededData(data: MStudent.Student): boolean {
+  if (data == null) return false;
+  if (data.HemisData == null) return false;
+  if (data.birthDate == null) return false;
+  if (data.email == null) return false;
+  if (data.gender == null) return false;
+  if (data.jshshir == null) return false;
+  if (data.phone == null) return false;
+  if (data.rent == null) return false;
+  if (data.rent.amount == null) return false;
+  if (data.rent.location == null) return false;
+  if (data.rent.location.address == null) return false;
+  if (data.rent.location.city == null) return false;
+  if (data.stir == null) return false;
+  if (data.tgPhone == null) return false;
+
+  return true;
+}

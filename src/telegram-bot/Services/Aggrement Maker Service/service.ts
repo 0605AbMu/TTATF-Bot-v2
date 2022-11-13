@@ -5,15 +5,22 @@ import AggBucket from "../../Models/AggrementFilesBucket";
 import { ObjectId } from "mongodb";
 import Config from "../../../config/Config";
 import qrCode from "qrcode";
+import path from "path";
+import { Readable } from "node:stream";
 class Service {
   private template: Buffer;
-  private templateFilePath: string = "./template.docx";
+  private templateFilePath: string = path.join(__dirname, "template.docx");
   private constructor() {}
 
   public async CreateDocumentAsync(data: TStudent): Promise<ObjectId> {
     try {
+      if (this.template == undefined) await this.InitializeTemplate();
       let tempData = await this.CreateFullData(data);
-      await this.SaveToBucket(tempData.id, await this.CreateReport(tempData));
+      await this.SaveToBucket(
+        tempData.id,
+        await this.CreateReport(tempData),
+        data.login
+      );
       return tempData.id;
     } catch (error) {
       throw error;
@@ -35,15 +42,17 @@ class Service {
       }
     });
   }
-  private SaveToBucket(fileId: ObjectId, data: Uint8Array): Promise<void> {
+  private SaveToBucket(
+    fileId: ObjectId,
+    data: Uint8Array,
+    student_id_number: string
+  ): Promise<void> {
     return new Promise((res, rej) => {
-      AggBucket.openUploadStreamWithId(fileId, "").write(
-        Buffer.from(data),
-        (err, result) => {
-          if (err) rej(err);
-          res(result);
-        }
-      );
+      let docStream = AggBucket.openUploadStreamWithId(fileId, "", {
+        metadata: { extension: ".docx", studentId: student_id_number },
+      });
+      Readable.from(Buffer.from(data)).pipe(docStream);
+      docStream.on("unpipe", res);
     });
   }
   private CreateQrCode(fileId: ObjectId): Promise<{
@@ -54,7 +63,6 @@ class Service {
   }> {
     const URLPath =
       Config.APP_HOST + ":" + Config.APP_PORT + "/file/" + fileId.toString();
-
     return new Promise(async (res, rej) => {
       qrCode.toBuffer(URLPath, { color: {}, type: "png" }, (err, buffer) => {
         if (err) rej(err);
@@ -72,8 +80,8 @@ class Service {
     let id = new ObjectId();
     return {
       date: {
-        day: date.getDay(),
-        month: date.getMonth(),
+        day: date.getDate(),
+        month: date.getMonth() + 1,
         year: date.getFullYear(),
       },
       orderNumber:
@@ -86,11 +94,13 @@ class Service {
 
   private InitializeTemplate(): Promise<true> {
     return new Promise((res, rej) => {
-      if (!fs.existsSync(this.templateFilePath))
+      if (fs.existsSync(this.templateFilePath))
         fs.readFile(this.templateFilePath, (err, data) => {
           if (err != null) rej(err);
           this.template = data;
+          res(true);
         });
+      else rej(new Error("document not found"));
     });
   }
 
