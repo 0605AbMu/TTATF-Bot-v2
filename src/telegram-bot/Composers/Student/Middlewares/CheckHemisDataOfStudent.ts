@@ -17,6 +17,7 @@ export async function CheckStudentLoginAndPasswordForExists(
       "<b>Ma'lumotlaringizda xatolik mavjud!\n/start buyrug'ini yuboring!</b>",
       Markup.removeKeyboard()
     );
+    return;
   }
   next();
 }

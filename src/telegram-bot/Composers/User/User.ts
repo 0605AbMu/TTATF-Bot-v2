@@ -27,7 +27,11 @@ User.hears(buttons.Home.Stat, async (ctx) => {
 });
 
 User.hears(buttons.Home.Kirish, async (ctx) => {
-  await ctx.scene.enter("LoginForStudent");
+  try {
+    await ctx.scene.enter("LoginForStudent");
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 export default User;

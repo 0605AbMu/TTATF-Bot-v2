@@ -6,6 +6,7 @@ import { ReferenceProvider } from "../../../Services/ReferenceProvider";
 import { HomeKeyboardMarkup } from "../Constants/Markups";
 import StudentModel, { Student } from "../../../Models/StudentModel";
 import { ObjectId } from "mongodb";
+import logger from "../../../../logger/logger";
 
 interface MySessionData extends Scenes.WizardSessionData {
   login: string;
@@ -26,38 +27,51 @@ const AdminMeta = {
 const scene = new Scenes.WizardScene<MyWizardContext>(
   "LoginForStudent",
   Telegraf.on("text", async (ctx) => {
-    ctx.scene.session.login = ctx.message.text;
-    await ctx.replyWithHTML("<b>Parolingizni jo'nating: </b>");
-    await ctx.wizard.next();
+    try {
+      ctx.scene.session.login = ctx.message.text;
+      await ctx.replyWithHTML("<b>Parolingizni jo'nating: </b>");
+      await ctx.wizard.next();
+    } catch (error) {
+      throw error;
+    }
   }),
   Telegraf.on(
     "text",
     async (ctx, next) => {
-      ctx.scene.session.password = ctx.message.text;
-      await ctx.replyWithHTML(
-        "<b>Ma'lumotlaringiz tekshirilyapdi. Iltimos biroz kuting...</b>"
-      );
-      await next();
+      try {
+        ctx.scene.session.password = ctx.message.text;
+        await ctx.replyWithHTML(
+          "<b>Ma'lumotlaringiz tekshirilyapdi. Iltimos biroz kuting...</b>"
+        );
+        await next();
+      } catch (error) {
+        throw error;
+        // console.log(error);
+      }
     },
     async (ctx, next) => {
-      if (
-        AdminMeta.login == ctx.scene.session.login &&
-        AdminMeta.password == ctx.scene.session.password
-      ) {
-        await UserModel.updateOne(
-          {
-            _id: ctx.UserData._id,
-          },
-          {
-            $set: {
-              role: "Admin",
+      try {
+        if (
+          AdminMeta.login == ctx.scene.session.login &&
+          AdminMeta.password == ctx.scene.session.password
+        ) {
+          await UserModel.updateOne(
+            {
+              _id: ctx.UserData._id,
             },
-          }
-        );
-        await ctx.replyWithHTML(
-          `<b>Tizimga kirdingiz!\n/start buyrug'ini yuboring</b>`
-        );
-      } else await next();
+            {
+              $set: {
+                role: "Admin",
+              },
+            }
+          );
+          await ctx.replyWithHTML(
+            `<b>Tizimga kirdingiz!\n/start buyrug'ini yuboring</b>`
+          );
+        } else await next();
+      } catch (error) {
+        throw error;
+      }
     },
 
     async (ctx) => {
@@ -175,7 +189,8 @@ scene.use(
   Composer.catch(async (err, ctx) => {
     ctx.scene.session.isSuccess = false;
     await ctx.scene.leave();
-    throw err;
+    ctx.replyWithHTML(`<b>❌Xatolik:\n${(<Error>err).message}</b>`);
+    logger.LogError(<Error>err);
   })
 );
 
