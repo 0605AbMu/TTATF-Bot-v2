@@ -3,6 +3,7 @@ import MyContext from "../../../Interfaces/MyContext";
 import { ReferenceProvider } from "../../../Services/ReferenceProvider";
 import PasswordChecker from "../../../Services/PasswordChecker";
 import UserModel from "../../../Models/UserModel";
+import { HomeMarkup } from "../Constants/Markups";
 
 interface MySessionData extends Scenes.WizardSessionData {
   password: string;
@@ -21,13 +22,18 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
     async (ctx, next) => {
       ctx.scene.session.password = ctx.message.text;
       if (!PasswordChecker(ctx.scene.session.password)) {
-        ctx.replyWithHTML(`<b>Siz kiritgan parol xavfsizlik talablariga mos emas.
+        ctx.replyWithHTML(
+          `<b>Siz kiritgan parol xavfsizlik talablariga mos emas.
 Parol:
 ✅Kamida 8 ta belgidan iborat bo'lishi;
 ✅Kamida 1 katta harfdan iborat bo'lishi;
 ✅Kamida 1 kichik harfdan iborat bo'lishi;
 ✅Kamida 1 ta raqamdan iborat bo'lishi;
-Shart!</b>`);
+Shart!</b>`,
+          {
+            reply_markup: HomeMarkup,
+          }
+        );
         await ctx.scene.leave();
         return;
       }
