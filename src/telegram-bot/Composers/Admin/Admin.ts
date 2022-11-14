@@ -9,6 +9,7 @@ import GetAllDataFromHemis from "../../Services/GetAllDataFromHemis";
 // Scenes
 import Reg from "./Scenes/Reg";
 import UpdateAllHemisDataScene from "./Scenes/UpdateAllHemisDataScene";
+import UpdateStudentPasportData from "./Scenes/UpdateStudentPasportDataScene";
 
 // Contants
 import { Home } from "./Constants/Buttons";
@@ -20,7 +21,9 @@ import UserModel from "../../Models/UserModel";
 
 const Admin = new Composer<MyContext>();
 Admin.use(session());
-Admin.use(new Scenes.Stage([Reg, UpdateAllHemisDataScene]));
+Admin.use(
+  new Scenes.Stage([Reg, UpdateAllHemisDataScene, UpdateStudentPasportData])
+);
 
 Admin.start(async (ctx) => {
   await ctx.replyWithHTML(
@@ -48,6 +51,10 @@ Admin.hears(Home.Exit, async (ctx) => {
     `<b>Tizimdan chiqildi!\n/start buyrug'ini yuboring</b>`,
     Markup.removeKeyboard()
   );
+});
+
+Admin.hears(Home.UpdateStudentPasportData, async (ctx) => {
+  await ctx.scene.enter("UpdateStudentPasportData");
 });
 
 export default Admin;
