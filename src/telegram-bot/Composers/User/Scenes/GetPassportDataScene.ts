@@ -17,7 +17,9 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
     .on("text", async (ctx) => {
       if (ctx.message.text == "Orqaga") {
         ctx.scene.leave();
-        await ctx.replyWithHTML("<b>Bosh menyu</b>");
+        await ctx.replyWithHTML("<b>Bosh menyu</b>", {
+          reply_markup: HomeKeyboardMarkup,
+        });
         return;
       }
       if (!new RegExp(/^[0-9]{14}$/gm).test(ctx.message.text))
