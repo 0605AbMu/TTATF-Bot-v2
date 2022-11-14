@@ -243,6 +243,15 @@ Student.hears(Home.Shartnoma, async (ctx) => {
   }
 });
 
+Student.hears(Home.ChangePassword, async (ctx) => {
+  try {
+    await ctx.scene.enter("ChangePassword");
+  } catch (error) {
+    ctx.replyWithHTML(`❌Xatolik:\n${error.message}`);
+    logger.LogError(error);
+  }
+});
+
 Student.action("updateMyData", async (ctx) => {
   await ctx.scene.enter("UpdateStudentData", ctx);
 });
