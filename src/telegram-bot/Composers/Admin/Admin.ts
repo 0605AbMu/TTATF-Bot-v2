@@ -10,7 +10,7 @@ import GetAllDataFromHemis from "../../Services/GetAllDataFromHemis";
 import Reg from "./Scenes/Reg";
 import UpdateAllHemisDataScene from "./Scenes/UpdateAllHemisDataScene";
 import UpdateStudentPasportData from "./Scenes/UpdateStudentPasportDataScene";
-
+import SendMessageToAll from "./Scenes/SendMessageToAllScene";
 // Contants
 import { Home } from "./Constants/Buttons";
 import { HomeMarkup } from "./Constants/Markups";
@@ -22,7 +22,12 @@ import UserModel from "../../Models/UserModel";
 const Admin = new Composer<MyContext>();
 Admin.use(session());
 Admin.use(
-  new Scenes.Stage([Reg, UpdateAllHemisDataScene, UpdateStudentPasportData])
+  new Scenes.Stage([
+    Reg,
+    UpdateAllHemisDataScene,
+    UpdateStudentPasportData,
+    SendMessageToAll,
+  ])
 );
 
 Admin.start(async (ctx) => {
@@ -57,4 +62,7 @@ Admin.hears(Home.UpdateStudentPasportData, async (ctx) => {
   await ctx.scene.enter("UpdateStudentPasportData");
 });
 
+Admin.hears(Home.MessageToAll, async (ctx) => {
+  await ctx.scene.enter("SendMessageToAll");
+});
 export default Admin;
