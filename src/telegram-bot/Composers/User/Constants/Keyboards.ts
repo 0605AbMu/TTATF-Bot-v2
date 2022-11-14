@@ -1,4 +1,5 @@
 export const Home = {
   Kirish: "Tizimga kirish",
-  Stat: "Statistika"
+  GetPassportData: "Talaba ma'lumotlarini olish",
+  Stat: "Statistika",
 };

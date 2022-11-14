@@ -26,8 +26,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         ctx.message.document.mime_type !=
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
       ) {
-        ctx.scene.leave();
-        await ctx.replyWithHTML("<b>❌Xatolik: Noto'g'ri fayl yuborildi</b>");
+        throw new Error("Noto'g'ri fayl yuborildi");
       }
       //Biroz kuting ma'lumotlar olinyapdi
       // Downloading file

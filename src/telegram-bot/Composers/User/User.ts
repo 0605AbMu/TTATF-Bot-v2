@@ -6,11 +6,14 @@ import * as buttons from "./Constants/Keyboards";
 import { HomeKeyboardMarkup } from "./Constants/Markups";
 
 import LoginForStudentScene from "./Scenes/LoginForStudentScene";
+import GetPassportDataScene from "./Scenes/GetPassportDataScene";
 
 const User = new Composer<MyContext>();
 
 User.use(session());
-User.use(new Scenes.Stage([LoginForStudentScene]).middleware());
+User.use(
+  new Scenes.Stage([LoginForStudentScene, GetPassportDataScene]).middleware()
+);
 
 User.start(async (ctx) => {
   await ctx.replyWithHTML("<b>👋Assalomu alaykum. Xush kelibsiz!</b>", {
@@ -32,6 +35,10 @@ User.hears(buttons.Home.Kirish, async (ctx) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+User.hears(buttons.Home.GetPassportData, async (ctx) => {
+  await ctx.scene.enter("GetPassportData");
 });
 
 export default User;
