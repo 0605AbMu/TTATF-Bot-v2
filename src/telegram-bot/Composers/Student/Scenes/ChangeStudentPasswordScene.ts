@@ -25,6 +25,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 Parol:
 ✅Kamida 8 ta belgidan iborat bo'lishi;
 ✅Kamida 1 katta harfdan iborat bo'lishi;
+✅Kamida 1 kichik harfdan iborat bo'lishi;
 ✅Kamida 1 ta raqamdan iborat bo'lishi;
 Shart!</b>`);
         await ctx.scene.leave();
