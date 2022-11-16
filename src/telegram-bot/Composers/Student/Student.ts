@@ -4,9 +4,7 @@ import UserModel from "../../Models/UserModel";
 import * as MStudent from "../../Models/StudentModel";
 import AggrementFilesBucket from "../../Models/AggrementFilesBucket";
 import logger from "../../../logger/logger";
-import toPdf from "office-to-pdf";
-// toPdf()
-
+import ScheduleListModel from "../../Models/ScheduleListModel";
 //Middlewares
 import { CheckStudentLoginAndPasswordForExists } from "./Middlewares/CheckHemisDataOfStudent";
 
@@ -250,6 +248,28 @@ Student.hears(Home.ChangePassword, async (ctx) => {
     ctx.replyWithHTML(`❌Xatolik:\n${error.message}`);
     logger.LogError(error);
   }
+});
+
+Student.hears(Home.GetScheduleList, async (ctx) => {
+  let today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  let list = await ScheduleListModel.find({
+    "group.id": ctx.UserData.StudentData.HemisData.group.id,
+    // lesson_date: { $gte: today.getTime() },
+  }).toArray();
+
+  // console.log(ctx.UserData.StudentData.HemisData);
+  if (list.length == 0) {
+    await ctx.replyWithHTML(
+      "<b>Bugungi sana bilan dars jadvali ma'lumotlari mavjud emas!</b>"
+    );
+  } else {
+    // list.sort((a, b) => a.lesson_date - b.lesson_date);
+    list.forEach((x) => {
+      console.table(x.lessonPair);
+    });
+  }
+  // console.log(list);
 });
 
 Student.action("updateMyData", async (ctx) => {

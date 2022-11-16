@@ -1,5 +1,3 @@
 node_modules
 build
 logs/
-src/config/data/production.json
-src/config/data/development.json

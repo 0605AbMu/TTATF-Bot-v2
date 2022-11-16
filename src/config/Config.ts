@@ -34,10 +34,10 @@ class Config implements IConfig {
   private AssignConfigData() {
     let configData: IConfig;
     if (this.type.toLowerCase() === "development")
-      configData = DevelopmentConfig;
+      configData = <IConfig>DevelopmentConfig;
     else if (this.type.toString() === "production")
-      configData = ProductionConfig;
-    else configData = DefaultConfig;
+      configData = <IConfig>ProductionConfig;
+    else configData = <IConfig>DefaultConfig;
     Object.keys(configData).forEach((x) => {
       this[x] = configData[x];
     });

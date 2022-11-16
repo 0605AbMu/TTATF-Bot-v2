@@ -27,6 +27,10 @@ export interface IHemisData extends Document {
     code: string;
     name: string;
   };
+  group: {
+    id: number;
+    name: string;
+  };
   updated_at: number;
   // .....
 }
