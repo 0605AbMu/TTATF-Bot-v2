@@ -1,21 +1,8 @@
-import { Axios, AxiosResponseTransformer } from "axios";
+import { AxiosResponseTransformer } from "axios";
 import https from "https";
 import Config from "../../config/Config";
-import HemisDataModel, { IHemisData } from "../Models/HemisDataModel";
-const axios = new Axios({
-  baseURL: Config.HEMIS_API_URL,
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false,
-  }),
-  headers: {
-    Authorization: "Bearer " + Config.BEARER_TOKEN_FOR_HEMIS,
-  },
-  responseType: "json",
-  transformResponse: (data) => {
-    return JSON.parse(data);
-  },
-});
-
+import { IHemisData } from "../Models/HemisDataModel";
+import axios from "../Constants/Axios";
 function GetPages(): Promise<{
   /**
    *Jami ma'lumotlar soni
