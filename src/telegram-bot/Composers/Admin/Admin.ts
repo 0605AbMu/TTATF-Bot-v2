@@ -73,7 +73,7 @@ Admin.hears(Home.UpdateScheduleListData, async (ctx) => {
     ctx.replyWithHTML(`<b>⏳Biroz kuting...</b>`);
     let data = await GetAllScheduleListData();
     try {
-      ScheduleListModel.deleteMany({});
+      await ScheduleListModel.deleteMany({});
     } catch (error) {}
     await ScheduleListModel.insertMany(data);
     ctx.replyWithHTML(`<b>✅Ma'lumotlar muvoffaqiyatli yangilandi!</b>`);
