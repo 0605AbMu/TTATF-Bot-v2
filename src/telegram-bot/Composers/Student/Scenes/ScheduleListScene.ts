@@ -67,7 +67,7 @@ scene.enter(async (ctx) => {
 
   if (list.length == 0) {
     await ctx.replyWithHTML(
-      `<b>Sizda bu hafta uchun dars jadvali to'g'risidagi ma'lumotlar mavjud emas!</b>`
+      `<b>Sizda bugun uchun dars jadvali to'g'risidagi ma'lumotlar mavjud emas!</b>`
     );
     ctx.scene.leave();
     return;
