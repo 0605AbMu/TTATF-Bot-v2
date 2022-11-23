@@ -77,8 +77,9 @@ Admin.hears(Home.UpdateScheduleListData, async (ctx) => {
     } catch (error) {}
     await ScheduleListModel.insertMany(data);
     ctx.replyWithHTML(`<b>✅Ma'lumotlar muvoffaqiyatli yangilandi!</b>`);
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    logger.LogError(<Error>err);
+    ctx.replyWithHTML(`<b>❌Xatolik: ${(<Error>err).message}</b>`);
   }
 });
 
