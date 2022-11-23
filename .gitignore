@@ -3,4 +3,4 @@ build
 logs/
 src/config/data/development.json
 src/config/data/production.json
-
+ecosystem.config.js
