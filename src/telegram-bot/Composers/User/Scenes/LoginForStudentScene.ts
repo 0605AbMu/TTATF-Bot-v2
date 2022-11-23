@@ -108,7 +108,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
               geo: null,
             },
           },
-          stir: 1233,
+          stir: null,
           tgPhone: null,
           _id: new ObjectId(),
         };
