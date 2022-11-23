@@ -58,7 +58,6 @@ export default function GetAllDataFromHemis(): Promise<ScheduleListData[]> {
           let list = await GetOnePageData(index);
           list.map((x) => result.push(x));
         } catch (error) {}
-        console.log(result.length);
       }
       res(result);
     } catch (error) {
