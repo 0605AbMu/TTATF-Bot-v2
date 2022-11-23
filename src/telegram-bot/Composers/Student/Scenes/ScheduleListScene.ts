@@ -22,22 +22,18 @@ interface MyWizardContext extends MyContext {
 const scene = new Scenes.WizardScene<MyWizardContext>(
   "ScheduleList",
   new Composer<MyWizardContext>()
-    .on("text", async (ctx) => {
-      if (ctx.message.text == "Orqaga") {
+    .on("callback_query", async (ctx) => {
+      if (!ctx.callbackQuery.data || ctx.callbackQuery.data == "back") {
         await ctx.scene.leave();
         ctx.replyWithHTML(`<b>Bosh menyu</b>`, { reply_markup: HomeMarkup });
         return;
       }
-      let [startTime, endTime] = ctx.message.text.split("-");
       let lesson = ctx.scene.session.Lessons.find(
-        (x) =>
-          x.lessonPair.start_time == startTime &&
-          x.lessonPair.end_time == endTime
+        (x) => x.id.toString() == ctx.callbackQuery.data
       );
       if (!lesson) throw new Error("Noto'g'ri tanlov");
       ctx.scene.leave();
-      await ctx.replyWithHTML(
-        `<b>Fan: ${lesson?.subject?.name ?? "Noma'lum"};
+      let s = `<b>Fan: ${lesson?.subject?.name ?? "Noma'lum"};
 O'qituvchi: ${lesson?.employee?.name ?? "Noma'lum"};
 Fakultet: ${lesson?.faculty?.name ?? "Noma'lum"};
 Guruh: ${lesson?.group?.name ?? "Noma'lum"};
@@ -45,26 +41,33 @@ Mashg'ulot turi: ${lesson?.trainingType?.name ?? "Noma'lum"};
 Xona: <code>${lesson?.auditorium?.name ?? "Noma'lum"}</code>;
 Boshlanish vaqti: <code>${lesson?.lessonPair?.start_time ?? "Noma'lum"}</code>
 Tugash vaqti: <code>${lesson?.lessonPair?.end_time ?? "Noma'lum"}</code>
-Semestr: ${lesson?.semester?.name ?? "Noma'lum"};</b>`,
-        { reply_markup: HomeMarkup }
-      );
+Semestr: ${lesson?.semester?.name ?? "Noma'lum"};</b>`;
+      try {
+        ctx.editMessageText(s, { parse_mode: "HTML" });
+      } catch (error) {
+        ctx.replyWithHTML(s);
+      }
+      ctx.scene.leave();
     })
-    .on("message", async (ctx) => {})
+    .on("message", async (ctx) => {
+      throw new Error("Noto'g'ri tanlov");
+    })
+);
+
+scene.use(
+  Telegraf.hears(/\/\w*/gm, (ctx, next) => {
+    ctx.scene.leave();
+  })
 );
 
 scene.enter(async (ctx) => {
-  let startOfWeek = new Date();
-  if (startOfWeek.getDay() != 1)
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-  startOfWeek.setUTCHours(0, 0, 0, 0);
+  let today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
   let list = await ScheduleListModel.find({
     "group.id": ctx.UserData.StudentData.HemisData.group.id,
-    weekStartTime: startOfWeek.getTime() / 1000,
+    lesson_date: today.getTime() / 1000,
   }).toArray();
-  list = list.filter(
-    (x) => new Date(x.lesson_date * 1000).getDay() === new Date().getDay()
-  );
-
+  // console.log(list);
   if (list.length == 0) {
     await ctx.replyWithHTML(
       `<b>Sizda bugun uchun dars jadvali to'g'risidagi ma'lumotlar mavjud emas!</b>`
@@ -72,19 +75,23 @@ scene.enter(async (ctx) => {
     ctx.scene.leave();
     return;
   }
+
   ctx.scene.session.Lessons = list;
-  let listOfLessonsAt: KeyboardButton[] = list.map((x) => {
-    return `${x.lessonPair.start_time}-${x.lessonPair.end_time}`;
-  });
-  listOfLessonsAt.push("Orqaga");
+  let listOfLessonsAt: InlineKeyboardButton[] = list.map((x) => ({
+    text: `${x.lessonPair.start_time}-${x.lessonPair.end_time}`,
+    callback_data: x.id.toString(),
+  }));
+
+  listOfLessonsAt.push({ callback_data: "back", text: "Orqaga" });
   await ctx.replyWithHTML(`<b>📆Vaqtni tanlang:</b>`, {
-    reply_markup: Markup.keyboard(listOfLessonsAt, { columns: 3 }).resize(true)
+    reply_markup: Markup.inlineKeyboard(listOfLessonsAt, { columns: 3 })
       .reply_markup,
   });
 });
 
 scene.use(
   Composer.catch((err, ctx) => {
+    ctx.deleteMessage().catch((e) => {});
     ctx.scene.leave();
     ctx.replyWithHTML(`<b>❌Xatolik: ${(<Error>err).message}</b>`, {
       reply_markup: HomeMarkup,

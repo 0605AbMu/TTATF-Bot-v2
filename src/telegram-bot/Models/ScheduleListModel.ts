@@ -7,7 +7,7 @@ export type StructureType = {
 };
 
 export class ScheduleListData {
-  public Id: number;
+  public id: number;
   public subject: {
     id: number;
     name: string;

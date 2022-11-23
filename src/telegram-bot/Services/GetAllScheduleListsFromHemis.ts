@@ -21,7 +21,7 @@ function GetPages(): Promise<{
 }> {
   return new Promise(async (res, rej) => {
     try {
-      const result = await axios.get("/data/schedule-list");
+      const result = await axios.get("/data/schedule-list?limit=200");
       if (result.data.code == 200 && result.data.data)
         res(result.data.data.pagination);
       else rej(new Error(result.data.error));
@@ -36,7 +36,7 @@ function GetOnePageData(pageIndex): Promise<ScheduleListData[]> {
   return new Promise(async (res, rej) => {
     try {
       const result = await axios.get(
-        "data/schedule-list?page=" + pageIndex,
+        "data/schedule-list?limit=200&page=" + pageIndex,
         {}
       );
       if (result.data.code == 200) res(result.data.data.items);
@@ -52,21 +52,15 @@ export default function GetAllDataFromHemis(): Promise<ScheduleListData[]> {
     try {
       const pages = await GetPages();
       const allPromise: Promise<ScheduleListData[]>[] = [];
+      let result: ScheduleListData[] = [];
       for (let index = 1; index <= pages.pageCount; index++) {
-        allPromise.push(GetOnePageData(index));
+        try {
+          let list = await GetOnePageData(index);
+          list.map((x) => result.push(x));
+        } catch (error) {}
+        console.log(result.length);
       }
-      let result: ScheduleListData[];
-      try {
-        result = <ScheduleListData[]>(await Promise.allSettled(allPromise))
-          .filter((x) => x.status === "fulfilled")
-          .map(function (x: any) {
-            return x.value;
-          })
-          .flat(Infinity);
-        res(result);
-      } catch (error) {
-        rej(error);
-      }
+      res(result);
     } catch (error) {
       rej(error);
     }

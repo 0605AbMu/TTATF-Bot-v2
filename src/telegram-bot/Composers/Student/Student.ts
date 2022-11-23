@@ -22,6 +22,8 @@ import GetReferenceScene from "./Scenes/GetReferenceScene";
 import ChangePassword from "./Scenes/ChangeStudentPasswordScene";
 import UpdateStudentDataScene from "./Scenes/UpdateStudentDataScene";
 import ScheduleListScene from "./Scenes/ScheduleListScene";
+import { InlineKeyboardButton } from "telegraf/types";
+import { isNumberObject } from "util/types";
 const Student = new Composer<MyContext>();
 
 Student.use(session());
@@ -254,49 +256,57 @@ Student.hears(Home.GetScheduleList, async (ctx) => {
 });
 
 Student.hears(Home.GetScheduleListForWeek, async (ctx) => {
-  let startOfWeek = new Date();
-  if (startOfWeek.getDay() != 1)
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-  startOfWeek.setUTCHours(0, 0, 0, 0);
-  let list = await ScheduleListModel.find({
-    "group.id": ctx.UserData.StudentData.HemisData.group.id,
-    weekStartTime: startOfWeek.getTime() / 1000,
-  }).toArray();
-  if (list.length == 0) {
-    ctx.replyWithHTML(
-      `<b>Bu xafta uchun dars jadvali ma'lumotlari topilmadi!</b>`
-    );
-    return;
-  }
-  let s = "";
-  [1, 2, 3, 4, 5, 6].map((x) => {
-    let lessons = list.filter(
-      (o) => new Date(o.lesson_date * 1000).getDay() === x
-    );
-
-    s +=
-      GetDayNameInTheWeek(x) +
-      (lessons.length > 0
-        ? lessons
-            .map(
-              (j, index) => `
-<code>#${index + 1}.</code>
-Fan: ${j.subject.name};
-O'qituvchi: ${j.employee.name};
-Dars vaqti: ${j.lessonPair.start_time}-${j.lessonPair.end_time};
-Xona: ${j.auditorium.name};`
-            )
-            .join("\n")
-        : "\n<code>Mavjud emas</code>") +
-      "\n".padEnd(25, "-") +
-      "\n";
+  let buttons: InlineKeyboardButton[] = [1, 2, 3, 4, 5, 6].map((x) => ({
+    text: GetDayNameInTheWeek(x),
+    callback_data: "lessonAt#" + x,
+  }));
+  ctx.replyWithHTML(`<b>Hafta kunini tanlang: </b>`, {
+    reply_markup: Markup.inlineKeyboard(buttons, { columns: 2 }).reply_markup,
   });
-
-  ctx.replyWithHTML(`<b>${s}</b>`);
 });
 
 Student.action("updateMyData", async (ctx) => {
   await ctx.scene.enter("UpdateStudentData", ctx);
+});
+
+// Lessons by date
+Student.on("callback_query", async (ctx, next) => {
+  let [ind, day] = ctx.callbackQuery.data.split("#");
+  if (ind != "lessonAt") return next();
+  let dayOfWeek = new Date();
+  let diff = parseInt(day) - dayOfWeek.getDay();
+  dayOfWeek.setUTCDate(dayOfWeek.getDate() + diff);
+  dayOfWeek.setUTCHours(0, 0, 0, 0);
+  let list = await ScheduleListModel.find({
+    "faculty.id": ctx.UserData.StudentData.HemisData.department.id,
+    "group.id": ctx.UserData.StudentData.HemisData.group.id,
+    lesson_date: dayOfWeek.getTime() / 1000,
+  }).toArray();
+  if (list.length == 0) {
+    await ctx.replyWithHTML(`<b>Bu kun bo'yicha ma'lumotlar mavjud emas</b>`);
+    return;
+  }
+
+  let s =
+    GetDayNameInTheWeek(parseInt(day)).toUpperCase() + " - kuni dars jadvali:" +
+    "\n" +
+    list
+      .map(
+        (x, index) => `
+<code>#${index + 1}</code>
+Fan: ${x.subject.name};
+O'qituvchi: ${x.employee.name};
+Xona: <code>${x.auditorium.name}</code>;
+Boshlanish vaqti: <code>${x.lessonPair.start_time}</code>;
+Tugash vaqti: <code>${x.lessonPair.end_time}</code>;`
+      )
+      .join("\n".padEnd(35, "-"));
+
+  try {
+    ctx.editMessageText(`<b>${s}</b>`, { parse_mode: "HTML" });
+  } catch (error) {
+    ctx.replyWithHTML(`<b>${s}</b>`);
+  }
 });
 
 export default Student;

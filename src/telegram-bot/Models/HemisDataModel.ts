@@ -31,6 +31,10 @@ export interface IHemisData extends Document {
     id: number;
     name: string;
   };
+  department: {
+    id: number;
+    name: string;
+  };
   updated_at: number;
   // .....
 }
