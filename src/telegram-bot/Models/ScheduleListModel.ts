@@ -8,7 +8,7 @@ export type StructureType = {
 
 export class ScheduleListData {
   public Id: number;
-  public Subject: {
+  public subject: {
     id: number;
     name: string;
   };
@@ -29,7 +29,7 @@ export class ScheduleListData {
     name: string;
     current: boolean;
   };
-  semestr: {
+  semester: {
     code: string;
     name: string;
   };
@@ -41,7 +41,7 @@ export class ScheduleListData {
     code: string;
     name: string;
   };
-  training_type: {
+  trainingType: {
     code: string;
     name: string;
   };

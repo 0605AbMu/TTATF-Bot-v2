@@ -13,6 +13,9 @@ import User from "./Composers/User/User";
 import InitializeUserData from "./Middlewares/InitializeUserData";
 import ChatTypeChecker from "./Middlewares/ChatTypeChecker";
 
+// Services
+import "./Services/UpdateStudentScheduleListService";
+
 const bot = new Telegraf<MyContext>(Config.TELEGRAM_BOT_TOKEN, {
   telegram: {
     attachmentAgent: new https.Agent({

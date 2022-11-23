@@ -20,11 +20,8 @@ import AggrementMaker from "../../Services/Aggrement Maker Service/service";
 // Scenes
 import GetReferenceScene from "./Scenes/GetReferenceScene";
 import ChangePassword from "./Scenes/ChangeStudentPasswordScene";
-import GetAggrementDocumentScene from "./Scenes/GetAggrementDocumentScene";
 import UpdateStudentDataScene from "./Scenes/UpdateStudentDataScene";
-import { ObjectId } from "mongodb";
-import { devNull } from "os";
-
+import ScheduleListScene from "./Scenes/ScheduleListScene";
 const Student = new Composer<MyContext>();
 
 Student.use(session());
@@ -33,6 +30,7 @@ Student.use(
     GetReferenceScene,
     ChangePassword,
     // GetAggrementDocumentScene,
+    ScheduleListScene,
     UpdateStudentDataScene,
   ]).middleware()
 );
@@ -106,6 +104,7 @@ Telegram raqami: <code>${
 O'rtacha GPA: ${data.avg_gpa};
 Kredit: ${data.total_credit};
 Kurs: ${data.level.name};
+Guruh: ${data.group.name};
 Manzil: ${data.address};
 Tuman: ${data.district.name};
 Viloyat: ${data.province.name};
@@ -251,25 +250,49 @@ Student.hears(Home.ChangePassword, async (ctx) => {
 });
 
 Student.hears(Home.GetScheduleList, async (ctx) => {
-  let today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
+  ctx.scene.enter("ScheduleList");
+});
+
+Student.hears(Home.GetScheduleListForWeek, async (ctx) => {
+  let startOfWeek = new Date();
+  if (startOfWeek.getDay() != 1)
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+  startOfWeek.setUTCHours(0, 0, 0, 0);
   let list = await ScheduleListModel.find({
     "group.id": ctx.UserData.StudentData.HemisData.group.id,
-    // lesson_date: { $gte: today.getTime() },
+    weekStartTime: startOfWeek.getTime() / 1000,
   }).toArray();
-
-  // console.log(ctx.UserData.StudentData.HemisData);
   if (list.length == 0) {
-    await ctx.replyWithHTML(
-      "<b>Bugungi sana bilan dars jadvali ma'lumotlari mavjud emas!</b>"
+    ctx.replyWithHTML(
+      `<b>Bu xafta uchun dars jadvali ma'lumotlari topilmadi!</b>`
     );
-  } else {
-    // list.sort((a, b) => a.lesson_date - b.lesson_date);
-    list.forEach((x) => {
-      console.table(x.lessonPair);
-    });
+    return;
   }
-  // console.log(list);
+  let s = "";
+  [1, 2, 3, 4, 5, 6].map((x) => {
+    let lessons = list.filter(
+      (o) => new Date(o.lesson_date * 1000).getDay() === x
+    );
+
+    s +=
+      GetDayNameInTheWeek(x) +
+      (lessons.length > 0
+        ? lessons
+            .map(
+              (j, index) => `
+<code>#${index + 1}.</code>
+Fan: ${j.subject.name};
+O'qituvchi: ${j.employee.name};
+Dars vaqti: ${j.lessonPair.start_time}-${j.lessonPair.end_time};
+Xona: ${j.auditorium.name};`
+            )
+            .join("\n")
+        : "\n<code>Mavjud emas</code>") +
+      "\n".padEnd(25, "-") +
+      "\n";
+  });
+
+  ctx.replyWithHTML(`<b>${s}</b>`);
 });
 
 Student.action("updateMyData", async (ctx) => {
@@ -294,6 +317,24 @@ function checkNeededData(data: MStudent.Student): boolean {
   if (data.rent.location.city == null) return false;
   if (data.stir == null) return false;
   if (data.tgPhone == null) return false;
-
   return true;
+}
+
+function GetDayNameInTheWeek(day: number): string {
+  switch (day) {
+    case 1:
+      return "Dushanba";
+    case 2:
+      return "Seshanba";
+    case 3:
+      return "Chorshanba";
+    case 4:
+      return "Payshanba";
+    case 5:
+      return "Juma";
+    case 6:
+      return "Shanba";
+    default:
+      return "Dushanba";
+  }
 }

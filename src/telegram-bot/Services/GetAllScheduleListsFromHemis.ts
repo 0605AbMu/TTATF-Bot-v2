@@ -35,9 +35,10 @@ function GetPages(): Promise<{
 function GetOnePageData(pageIndex): Promise<ScheduleListData[]> {
   return new Promise(async (res, rej) => {
     try {
-      const result = await axios.get("data/schedule-list?page=" + pageIndex, {
-        transformResponse: (res) => {},
-      });
+      const result = await axios.get(
+        "data/schedule-list?page=" + pageIndex,
+        {}
+      );
       if (result.data.code == 200) res(result.data.data.items);
       else rej(new Error("Bu sahifa ma'lumotlari topilmadi."));
     } catch (error) {
