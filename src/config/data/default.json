@@ -1,0 +1,12 @@
+{
+  "type": "Default",
+  "APP_HOST": "localhost",
+  "APP_PORT": 12,
+  "MONGO_URL": "mongodb://127.0.0.1:27017/",
+  "MONGO_DB_NAME": "",
+  "TELEGRAM_BOT_TOKEN": "2133608433:AAGvJ9kd6YKLM8oYGtxm1vGl8WUoJ-7yeYg",
+  "LOG_PATH": "logs/",
+  "HEMIS_API_URL": "https://student.ttatf.uz/rest/v1/",
+  "BEARER_TOKEN_FOR_HEMIS": "4uiN7TQy6ans_8YXoxaTRnT5dHByB4La",
+  "LAST_AGGREMENT_FILE_ORDER": 894
+}
