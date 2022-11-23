@@ -13,7 +13,7 @@ import StudentModel, { IStudent, Student } from "../../../Models/StudentModel";
 import { HomeMarkup } from "../Constants/Markups";
 import { ArrayChunk } from "../Util/Array";
 interface MySessionData extends Scenes.WizardSessionData {
-    provider: ReferenceProvider;
+  provider: ReferenceProvider;
   regex?: RegExp;
   stepIndex: number;
   targetMessage: Message;
@@ -66,7 +66,6 @@ const Steps: TStep[] = [
     checkMethod: <T extends string>(s: T): boolean => {
       return new RegExp(/^([0-9]{14})$/gm).test(s);
     },
-    
   },
   {
     name: "Ijara uy narxi",
@@ -112,7 +111,7 @@ const Steps: TStep[] = [
     name: "STIR",
     message: (e) =>
       `STIR raqamingizni yuboring[faqat raqamlarda](${e ?? "Noma'lum"}):`,
-    paramName: "rent.stir",
+    paramName: "stir",
     checkMethod: <T extends string>(s: T): boolean => {
       return new RegExp(/^([0-9]+)$/gm).test(s);
     },
@@ -132,7 +131,9 @@ const Steps: TStep[] = [
     message: (e) => `E-mail manzilingizni yuboring(${e ?? "Noma'lum"}):`,
     paramName: "email",
     checkMethod: <T extends string>(s: T): boolean => {
-      return new RegExp(/^([a-zA-z0-9@#$%^&*`'"><>< ]+@[a-zA-z0-9]+\.[a-zA-Z]+)$/gm).test(s);
+      return new RegExp(
+        /^([a-zA-z0-9@#$%^&*`'"><>< ]+@[a-zA-z0-9]+\.[a-zA-Z]+)$/gm
+      ).test(s);
     },
   },
 ];

@@ -1,7 +1,5 @@
-import { Collection, Document, ObjectId } from "mongodb";
-import { User } from "telegraf/types";
+import { Collection } from "mongodb";
 import client from "../../DataBase/DBConnector";
-import { Student } from "./StudentModel";
 
 export class StudentPassportData {
   public student_id_number: string;
@@ -20,8 +18,8 @@ export class StudentPassportData {
     this.jshshir = jshshir;
   }
 }
-const UserModel: Collection<StudentPassportData> = client
+const StudentPassportModel: Collection<StudentPassportData> = client
   .db("TTATF")
   .collection("Student-Pasport-Data");
 
-export default UserModel;
+export default StudentPassportModel;
