@@ -6,8 +6,6 @@ const axios = new Axios({
   baseURL: Config.HEMIS_API_URL,
   httpsAgent: new https.Agent({
     rejectUnauthorized: false,
-    keepAlive: true,
-    keepAliveMsecs: 30000,
   }),
   headers: {
     Authorization: "Bearer " + Config.BEARER_TOKEN_FOR_HEMIS,

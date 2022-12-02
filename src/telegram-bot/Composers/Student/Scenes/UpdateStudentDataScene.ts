@@ -12,7 +12,10 @@ import { InlineKeyboardButton, KeyboardButton, Message } from "telegraf/types";
 import StudentModel, { IStudent, Student } from "../../../Models/StudentModel";
 import { HomeMarkup } from "../Constants/Markups";
 import { ArrayChunk } from "../Util/Array";
+import logger from "../../../../logger/logger";
+import _ from "lodash";
 interface MySessionData extends Scenes.WizardSessionData {
+  changes: { key: string, value: any }[]
   provider: ReferenceProvider;
   regex?: RegExp;
   stepIndex: number;
@@ -35,43 +38,9 @@ type TStep = {
 
 const Steps: TStep[] = [
   {
-    name: "Tug'ulgan sanangiz",
-    message: (e) =>
-      `Tug'ulgan sanangizni kiriting[DD.MM.YYYY](${e ?? "Noma'lum"}):`,
-    paramName: "birthDate",
-    checkMethod: <T extends string>(s: T): boolean => {
-      let b = new RegExp(/^([0-9]{2}.[0-9]{2}.[0-9]{4})$/gm).test(s);
-      if (!b) return b;
-      const [d, m, y] = s.split(".").map((x) => Number.parseInt(x));
-      if (d > 0 && d <= 31 && m > 0 && m <= 12 && y > 1900 && y < 2100)
-        return true;
-      else return false;
-    },
-  },
-  {
-    name: "Jins",
-    message: (e) => `Jinsingizni tanlang[Erkak | Ayol](${e ?? "Noma'lum"}):`,
-    paramName: "gender",
-    checkMethod: <T extends string>(s: T): boolean => {
-      if (s == "Erkak" || s == "Ayol") return true;
-      else return false;
-    },
-    replyMarkup: ["Erkak", "Ayol"],
-  },
-  {
-    name: "JSHSHIR",
-    message: (e) =>
-      `JSHSHIR raqamingizni yuboring[14 ta raqam](${e ?? "Noma'lum"}):`,
-    paramName: "jshshir",
-    checkMethod: <T extends string>(s: T): boolean => {
-      return new RegExp(/^([0-9]{14})$/gm).test(s);
-    },
-  },
-  {
     name: "Ijara uy narxi",
     message: (e) =>
-      `Ijarada turgan uyingizning narxini yuboring[faqat raqamlarda va so'mda](${
-        e ?? "Noma'lum"
+      `Ijarada turgan uyingizning narxini yuboring[faqat raqamlarda va so'mda](${e ?? "Noma'lum"
       }):`,
     paramName: "rent.amount",
     checkMethod: <T extends string>(s: T): boolean => {
@@ -141,6 +110,27 @@ const Steps: TStep[] = [
 const scene = new Scenes.WizardScene<MyWizardContext>(
   "UpdateStudentData",
   new Composer<MyWizardContext>()
+    .action("save", async ctx => {
+      ctx.scene.session.changes.forEach(x => {
+        _.set(ctx.UserData.StudentData, x.key, x.value);
+      })
+      ctx.UserData.StudentData = (
+        await StudentModel.findOneAndUpdate(
+          { _id: ctx.UserData.StudentData._id },
+          { $set: ctx.UserData.StudentData },
+          { upsert: true, returnDocument: "after" }
+        )
+      ).value;
+      await UserModel.updateOne(
+        { _id: ctx.UserData._id },
+        { $set: ctx.UserData },
+        { upsert: true }
+      );
+      await ctx.replyWithHTML("<b>✅Ma'lumotlar saqlandi!</b>", {
+        reply_markup: HomeMarkup,
+      });
+      await ctx.scene.leave();
+    })
     .on("callback_query", async (ctx) => {
       let step = Steps.find((x) => x.paramName == ctx.callbackQuery.data);
       if (!step) {
@@ -148,28 +138,22 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         ctx.scene.leave();
         return;
       }
-      await ctx.editMessageReplyMarkup({ inline_keyboard: new Array() });
+      // await ctx.editMessageReplyMarkup({ inline_keyboard: new Array() });
       ctx.scene.session.currentStep = step;
-      ctx
+      await ctx
         .replyWithHTML(
           `<b> ${step.message(ctx.UserData.StudentData[step.paramName])}</b>`,
           {
             reply_markup: Markup.keyboard([
               step.replyMarkup ?? [],
               ["❌Bekor qilish"],
-            ]).resize(true).reply_markup,
+            ]).resize(true).oneTime(true).reply_markup,
           }
-        )
-        .then((x) => {
-          setTimeout(() => {
-            ctx.deleteMessage(x.message_id);
-            ctx.scene.leave();
-          }, 60000);
-        });
+        );
       ctx.wizard.next();
     })
     .on("message", async (ctx) => {
-      ctx.scene.leave();
+      await ctx.replyWithHTML(`<b>Noto'g'ri ma'lumot yubordingiz!</b>`);
     }),
 
   new Composer<MyWizardContext>()
@@ -194,43 +178,21 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
             );
           return;
         }
-      ctx.UserData.StudentData = (
-        await StudentModel.findOneAndUpdate(
-          { _id: ctx.UserData.StudentData._id },
-          { $set: { [step.paramName]: ctx.message.text } },
-          { upsert: true, returnDocument: "after" }
-        )
-      ).value;
-      await UserModel.updateOne(
-        { _id: ctx.UserData._id },
-        { $set: ctx.UserData },
-        { upsert: true }
-      );
-      ctx.replyWithHTML("<b>✅Ma'lumotlaringiz saqlandi</b>", {
-        reply_markup: HomeMarkup,
+      ctx.scene.session.changes.push({ key: step.paramName, value: ctx.message.text });
+      await ctx.replyWithHTML("<b>✅Ma'lumot qabul qilindi</b>", {
+        reply_markup: Markup.inlineKeyboard([{ callback_data: "save", text: "✅Saqlash va chiqish" }]).reply_markup
       });
-      ctx.scene.leave();
+      await ctx.wizard.back();
     })
     .on("contact", async (ctx) => {
       let step = ctx.scene.session.currentStep;
       if (!step) ctx.scene.leave();
-      ctx.UserData.StudentData[step.paramName] = ctx.message.contact;
-      ctx.UserData.StudentData = (
-        await StudentModel.findOneAndUpdate(
-          { _id: ctx.UserData.StudentData._id },
-          { $set: { [step.paramName]: ctx.message.contact } },
-          { upsert: true, returnDocument: "after" }
-        )
-      ).value;
-      await UserModel.updateOne(
-        { _id: ctx.UserData._id },
-        { $set: ctx.UserData },
-        { upsert: true }
-      );
-      ctx.replyWithHTML("<b>✅Ma'lumotlaringiz saqlandi</b>", {
-        reply_markup: HomeMarkup,
+
+      ctx.scene.session.changes.push({ key: step.paramName, value: ctx.message.contact });
+      await ctx.replyWithHTML("<b>✅Ma'lumot qabul qilindi</b>", {
+        reply_markup: Markup.inlineKeyboard([{ callback_data: "save", text: "Saqlash va chiqish" }]).reply_markup
       });
-      ctx.scene.leave();
+      await ctx.wizard.back();
     })
 );
 
@@ -247,23 +209,32 @@ scene.use(
 );
 
 scene.enter(async (ctx) => {
+  ctx.scene.session.changes = [];
   let keyboard: InlineKeyboardButton[] = Steps.map((x) => {
     return {
       text: "✏️" + x.name,
       callback_data: x.paramName,
     };
   });
+  keyboard.push({ text: "✅Saqlash va chiqish", callback_data: "save" });
   ctx
     .editMessageReplyMarkup({
       inline_keyboard: ArrayChunk(keyboard, 3),
     })
     .catch();
+  await ctx.replyWithHTML(`<b>Ma'lumotlarni tahrirlab bo'lib saqlash va chiqish tugmasini bosing</b>`,
+    {
+      reply_markup: Markup.removeKeyboard().reply_markup
+    });
 });
 
 scene.use(
   Composer.catch(async (err, ctx) => {
+    logger.LogError(<Error>err);
     await ctx.scene.leave();
-    throw err;
+    ctx.replyWithHTML(`<b>❌Xatolik: ${(<Error>err).message}</b>`, {
+      reply_markup: HomeMarkup,
+    });
   })
 );
 

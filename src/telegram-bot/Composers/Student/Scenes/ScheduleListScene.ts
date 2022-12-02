@@ -67,7 +67,6 @@ scene.enter(async (ctx) => {
     "group.id": ctx.UserData.StudentData.HemisData.group.id,
     lesson_date: today.getTime() / 1000,
   }).toArray();
-  // console.log(list);
   if (list.length == 0) {
     await ctx.replyWithHTML(
       `<b>Sizda bugun uchun dars jadvali to'g'risidagi ma'lumotlar mavjud emas!</b>`

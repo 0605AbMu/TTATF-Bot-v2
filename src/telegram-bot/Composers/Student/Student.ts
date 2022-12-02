@@ -83,25 +83,23 @@ Student.hears(Home.AboutMySelf, async (ctx, next) => {
   const s = `<b>F.I.O: ${data.full_name};
 Login: <code>${data.student_id_number}</code>;
 🔵-- <code>Shaxsiy Ma'lumotlar</code> --
-Tug'ulgan sanasi: ${privateData.birthDate ?? "❌noma'lum"};
-Jinsi: ${privateData.gender ?? "❌noma'lum"};
-Ijaradagi uy joylashuvi: ${
-    privateData.rent
-      ? `${privateData.rent?.location?.city ?? "❌noma'lum"}, ${
-          privateData.rent?.location?.street ??
-          privateData.rent?.location?.address ??
-          "❌noma'lum"
-        }`
+Tug'ulgan sanasi: ${privateData.HemisData?.birth_date == null ? "❌noma'lum" : (new Date(privateData.HemisData.birth_date * 1000).toLocaleDateString())};
+Jinsi: ${privateData.HemisData?.gender.name ?? "❌noma'lum"};
+Ijaradagi uy joylashuvi: ${privateData.rent
+      ? `${privateData.rent?.location?.city ?? "❌noma'lum"}, ${privateData.rent?.location?.street ??
+      privateData.rent?.location?.address ??
+      "❌noma'lum"
+      }`
       : "❌noma'lum"
-  };
+    };
 Ijaradagi uy narxi: ${privateData.rent?.amount ?? "❌noma'lum"};
 STIR: ${privateData.stir ?? "❌noma'lum"};
-JSHSHIR: ${privateData.jshshir ?? "❌noma'lum"};
+JSHSHIR: ${privateData.HemisData?.jshshir ?? "❌noma'lum"};
+Pasport seria: ${privateData.HemisData?.seria ?? "❌noma'lum"};
 E-mail: <code>${privateData.email ?? "❌noma'lum"};</code>
 Telefon: <code>${privateData.phone ?? "❌noma'lum"};</code>
-Telegram raqami: <code>${
-    privateData.tgPhone?.phone_number ?? "❌noma'lum"
-  };</code>
+Telegram raqami: <code>${privateData.tgPhone?.phone_number ?? "❌noma'lum"
+    };</code>
 🟢-- <code>Hemis Ma'lumotlari</code> --
 O'rtacha GPA: ${data.avg_gpa};
 Kredit: ${data.total_credit};
@@ -113,7 +111,7 @@ Viloyat: ${data.province.name};
 Holati: ${data.studentStatus.name};
 
 <code>⚠️Eslatma: Ma'lumotlar bilan bog'liq barcha jarayonlardagi xabarlar(ko'rish, yangilash)
-ma'lum vaqtda o'chirib yuboriladi!</code>
+10 daqiqadan kam bo'lmagan vaqtda o'chirib yuboriladi!</code>
 </b>`;
 
   try {
@@ -134,7 +132,7 @@ ma'lum vaqtda o'chirib yuboriladi!</code>
         .then((x) => {
           setTimeout(() => {
             ctx.deleteMessage(x.message_id).catch();
-          }, 60000);
+          }, 10 * 60 * 1000);
         })
         .catch(async (e) => {
           await ctx
@@ -144,7 +142,7 @@ ma'lum vaqtda o'chirib yuboriladi!</code>
             .then((x) => {
               setTimeout(() => {
                 ctx.deleteMessage(x.message_id).catch();
-              }, 60000);
+              }, 10 * 60 * 1000);
             });
         });
     else
@@ -155,7 +153,7 @@ ma'lum vaqtda o'chirib yuboriladi!</code>
         .then((x) => {
           setTimeout(() => {
             ctx.deleteMessage(x.message_id).catch();
-          }, 60000);
+          }, 10 * 60 * 1000);
         });
   } catch (error) {
     throw error;
@@ -183,14 +181,12 @@ Student.hears(Home.Shartnoma, async (ctx) => {
     await ctx.replyWithDocument(
       {
         source: AggrementFilesBucket.openDownloadStream(file._id),
-        filename: `Ijara shartnoma arizasi-${
-          ctx.UserData.StudentData?.HemisData?.short_name ?? "unknown"
-        }${file.metadata.extension}`,
+        filename: `Ijara shartnoma arizasi-${ctx.UserData.StudentData?.HemisData?.short_name ?? "unknown"
+          }${file.metadata.extension}`,
       },
       {
-        caption: `<b>📄${
-          ctx.UserData.StudentData.HemisData.short_name
-        } | Ijara shartnoma arizasi.\nBerilgan sana: ${file.uploadDate.toLocaleDateString()}</b>`,
+        caption: `<b>📄${ctx.UserData.StudentData.HemisData.short_name
+          } | Ijara shartnoma arizasi.\nBerilgan sana: ${file.uploadDate.toLocaleDateString()}</b>`,
         parse_mode: "HTML",
       }
     );
@@ -225,14 +221,12 @@ Student.hears(Home.Shartnoma, async (ctx) => {
     await ctx.replyWithDocument(
       {
         source: AggrementFilesBucket.openDownloadStream(fileId),
-        filename: `Ijara shartnoma arizasi-${
-          ctx.UserData.StudentData?.HemisData?.short_name ?? "unknown"
-        }${file.metadata.extension}`,
+        filename: `Ijara shartnoma arizasi-${ctx.UserData.StudentData?.HemisData?.short_name ?? "unknown"
+          }${file.metadata.extension}`,
       },
       {
-        caption: `<b>📄${
-          ctx.UserData.StudentData.HemisData.short_name
-        } | Ijara shartnoma arizasi.\nBerilgan sana: ${file.uploadDate.toLocaleDateString()}</b>`,
+        caption: `<b>📄${ctx.UserData.StudentData.HemisData.short_name
+          } | Ijara shartnoma arizasi.\nBerilgan sana: ${file.uploadDate.toLocaleDateString()}</b>`,
         parse_mode: "HTML",
       }
     );
@@ -315,10 +309,10 @@ export default Student;
 function checkNeededData(data: MStudent.Student): boolean {
   if (data == null) return false;
   if (data.HemisData == null) return false;
-  if (data.birthDate == null) return false;
+  if (data.HemisData?.birth_date == null) return false;
   if (data.email == null) return false;
-  if (data.gender == null) return false;
-  if (data.jshshir == null) return false;
+  if (data.HemisData?.gender == null) return false;
+  if (data.HemisData?.jshshir == null) return false;
   if (data.phone == null) return false;
   if (data.rent == null) return false;
   if (data.rent.amount == null) return false;

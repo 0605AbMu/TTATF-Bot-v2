@@ -75,6 +75,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
     },
 
     async (ctx) => {
+      console.log(ctx.scene.session.login);
       const hemisData = await HemisDataModel.findOne({
         student_id_number: ctx.scene.session.login,
       });
@@ -94,11 +95,8 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
       if (!student) {
         student = new Student();
         student = {
-          birthDate: null,
           email: null,
-          gender: null,
           HemisData: hemisData,
-          jshshir: null,
           login: ctx.scene.session.login,
           password: ctx.scene.session.password,
           phone: null,

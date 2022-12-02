@@ -7,6 +7,8 @@ import axios from "axios";
 import StudentPassportDataModel, {
   StudentPassportData,
 } from "../../../Models/StudentPasportModel";
+import StudentModel from "../../../Models/StudentModel";
+import HemisDataModel from "../../../Models/HemisDataModel";
 
 interface MySessionData extends Scenes.WizardSessionData {
   //   allHemisData: IHemisData[];
@@ -43,13 +45,25 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         let data = result[0].data;
         try {
           await StudentPassportDataModel.drop({});
-        } catch (error) {}
+        } catch (error) { }
         data.splice(0, 1);
         const inserted = await StudentPassportDataModel.insertMany(
           data.map((x) => {
             return new StudentPassportData(x[0], x[1], x[2], x[3]);
           })
         );
+
+        await HemisDataModel.find().forEach(x => {
+          let data = StudentPassportDataModel.findOne({ student_id_number: x.student_id_number.toString() });
+          if (data == null)
+            return;
+
+        })
+
+        StudentPassportDataModel.find({})
+          .forEach(x => {
+            HemisDataModel.updateOne({ student_id_number: x.student_id_number }, { $set: { jshshir: x.jshshir, seria: x.seria } })
+          })
 
         ctx.scene.leave();
         await ctx.replyWithHTML(

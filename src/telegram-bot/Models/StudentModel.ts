@@ -1,13 +1,13 @@
 import { Collection, Document, ObjectId } from "mongodb";
 import { User } from "telegraf/types";
 import client from "../../DataBase/DBConnector";
-import { IHemisData } from "./HemisDataModel";
+import { HemisData } from "./HemisDataModel";
 import { Location, Contact } from "telegraf/typings/core/types/typegram";
 
 export interface IStudent {
   login?: string;
   password?: string;
-  HemisData?: IHemisData;
+  HemisData?: HemisData;
   phone?: string;
   tgPhone?: Contact;
   email?: string;
@@ -30,14 +30,11 @@ export interface IStudent {
 export class Student {
   login?: string = null;
   password?: string = null;
-  HemisData?: IHemisData = null;
+  HemisData?: HemisData = null;
   phone?: string = null;
   tgPhone?: Contact = null;
   email?: string = null;
-  birthDate?: string;
-  gender?: "Erkak" | "Ayol" = "Erkak";
   stir?: number = null;
-  jshshir?: number | string = null;
   rent?: {
     location: {
       city?: string;

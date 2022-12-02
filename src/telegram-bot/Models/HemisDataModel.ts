@@ -2,15 +2,22 @@ import client from "../../DataBase/DBConnector";
 import { Collection, ObjectId, Document } from "mongodb";
 import { IUser } from "./UserModel";
 
-export interface IHemisData extends Document {
+export class HemisData {
   _id: ObjectId;
-  student_id_number: number;
+  student_id_number: string;
   full_name: string;
   short_name: string;
   image: string;
   avg_gpa: number;
   total_credit: number;
   address: string;
+  birth_date?: number;
+  gender?: {
+    code: number;
+    name: string;
+  };
+  jshshir?: number | string;
+  seria?: number | string;
   province: {
     code: string;
     name: string;
@@ -39,7 +46,7 @@ export interface IHemisData extends Document {
   // .....
 }
 
-const HemisDataModel: Collection<IHemisData> = client
+const HemisDataModel: Collection<HemisData> = client
   .db("TTATF")
   .collection("Hemis-Students-Data");
 
