@@ -84,7 +84,7 @@ Student.hears(Home.AboutMySelf, async (ctx, next) => {
 Login: <code>${data.student_id_number}</code>;
 🔵-- <code>Shaxsiy Ma'lumotlar</code> --
 Tug'ulgan sanasi: ${privateData.HemisData?.birth_date == null ? "❌noma'lum" : (new Date(privateData.HemisData.birth_date * 1000).toLocaleDateString())};
-Jinsi: ${privateData.HemisData?.gender.name ?? "❌noma'lum"};
+Jinsi: ${privateData.HemisData?.gender?.name ?? "❌noma'lum"};
 Ijaradagi uy joylashuvi: ${privateData.rent
       ? `${privateData.rent?.location?.city ?? "❌noma'lum"}, ${privateData.rent?.location?.street ??
       privateData.rent?.location?.address ??
