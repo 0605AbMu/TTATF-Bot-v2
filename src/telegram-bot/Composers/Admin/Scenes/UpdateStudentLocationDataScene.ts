@@ -21,7 +21,7 @@ interface MyWizardContext extends MyContext {
 }
 
 const scene = new Scenes.WizardScene<MyWizardContext>(
-  "UpdateStudentPasportData",
+  "UpdateStudentLocationData",
   new Composer<MyWizardContext>()
     .on("document", async (ctx) => {
       if (
@@ -41,34 +41,24 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           ).data
         );
         if (result.length < 1) throw new Error("Noto'g'ri formatdagi fayl!");
-        if (result[0].data.length == 0 || (<[]>result[0].data[0]).length < 4)
+        if (result[0].data.length == 0 || (<[]>result[0].data[0]).length < 2)
           throw new Error("Fayldagi ma'lumotlar formati to'g'ri emas!");
         let data = result[0].data;
-        try {
-          await StudentPassportDataModel.drop({});
-        } catch (error) { }
         data.splice(0, 1);
-        const inserted = await StudentPassportDataModel.insertMany(
-          data.map((x) => {
-            return new StudentPassportData(x[0], x[1], x[2], x[3]);
-          })
-        );
 
-
+        let count = 0;
         for (const x of data) {
-          await HemisDataModel.updateOne({ student_id_number: x[0] }, { $set: { seria: x[2], jshshir: x[3] } }).catch(e => { });
+          await HemisDataModel.updateOne({ student_id_number: x[0] }, { $set: { locationType: x[1] } }).catch().then(x => count++);
         }
-
         let ids = await StudentModel.find({}, { projection: { _id: 1, HemisData: 1 } }).toArray();
         for (const id of ids) {
           if (id.HemisData == null)
             continue;
           await StudentModel.updateOne({ _id: id._id }, { $set: { HemisData: await HemisDataModel.findOne({ student_id_number: id.HemisData.student_id_number }) } });
         }
-
         ctx.scene.leave();
         await ctx.replyWithHTML(
-          `<b>✅${inserted.insertedCount} ta ma'lumot o'qib olindi!</b>`,
+          `<b>✅${count} ta ma'lumot o'qib olindi!</b>`,
           {
             reply_markup: HomeMarkup.resize().reply_markup,
           }
@@ -88,11 +78,11 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 scene.enter(async (ctx) => {
   await ctx.replyWithDocument(
     {
-      source: NodeXlsx.build([{ name: "Students passport data", data: [["Talaba ID si", "Talaba F.I.O", "Pasport seria si", "JSHSHIR"]], options: { "!cols": [{ wch: 10 }, { wch: 30 }, { wch: 9 }, { wch: 14 }] } }]),
+      source: NodeXlsx.build([{ name: "student location types", data: [["Talaba id si", "Turar joy turi"]], options: { "!cols": [{ width: 20 }, { width: 25 }] } }]),
       filename: "example.xlsx"
     },
     {
-      caption: "<b>Talabalarning pasport ma'lumotlarini excel fayl ko'rinishida yuboring. Example ni yuqoridan yuklab olishingiz mumkin.</b>",
+      caption: "<b>Talabalar turar joy ma'lumotlarini excel fayl ko'rinishida yuboring. Example ni yuqoridan yuklab olishingiz mumkin</b>",
       parse_mode: "HTML",
       reply_markup: Markup.keyboard(["❌Bekor qilish"]).resize(true)
         .reply_markup,

@@ -85,15 +85,9 @@ Login: <code>${data.student_id_number}</code>;
 🔵-- <code>Shaxsiy Ma'lumotlar</code> --
 Tug'ulgan sanasi: ${privateData.HemisData?.birth_date == null ? "❌noma'lum" : (new Date(privateData.HemisData.birth_date * 1000).toLocaleDateString())};
 Jinsi: ${privateData.HemisData?.gender?.name ?? "❌noma'lum"};
-Ijaradagi uy joylashuvi: ${privateData.rent
-      ? `${privateData.rent?.location?.city ?? "❌noma'lum"}, ${privateData.rent?.location?.street ??
-      privateData.rent?.location?.address ??
-      "❌noma'lum"
-      }`
-      : "❌noma'lum"
-    };
+Ijaradagi uy shahri: ${privateData.rent?.location?.city ?? "❌noma'lum"};
+Ijaradagi uy manzili: ${privateData.rent?.location?.address ?? "❌noma'lum"};
 Ijaradagi uy narxi: ${privateData.rent?.amount ?? "❌noma'lum"};
-STIR: ${privateData.stir ?? "❌noma'lum"};
 JSHSHIR: ${privateData.HemisData?.jshshir ?? "❌noma'lum"};
 Pasport seria: ${privateData.HemisData?.seria ?? "❌noma'lum"};
 E-mail: <code>${privateData.email ?? "❌noma'lum"};</code>
@@ -192,20 +186,27 @@ Student.hears(Home.Shartnoma, async (ctx) => {
     return;
   }
 
+  // Check period for service
   if (experiedAt < date) {
     await ctx.replyWithHTML(
       "<b>Ijara shartnoma xizmati har oyning 7-sanasiga qadar ish faoliyatida bo'ladi</b>"
     );
     return;
   }
-  // Check period for service
+  // check for all needed data
   if (!checkNeededData(ctx.UserData.StudentData)) {
     await ctx.replyWithHTML(
-      `<b>Sizda ma'lumotlar yetarli emas!. Barcha ma'lumotlarni to'ldirib yana urinib ko'ring</b>`
+      `<b>Sizda ma'lumotlar yetarli emas!. Ma'lumotlar bo'limiga kirib o'zingiz haqingizdagi ma'lumotlarni yangilang!</b>`
     );
     return;
   }
-  await ctx.replyWithHTML("<b>Biroz kuting ma'lumotlar tayyorlanyapdi</b>");
+
+  if (ctx.UserData.StudentData.HemisData.locationType.toLowerCase() != "ijaradagi uyda") {
+    await ctx.replyWithHTML(`<b>Siz ijaradagi uyda istiqomat qilmaysiz. Agar da bu ma'lumot noto'g'ri bo'ladigan bo'lsa Tutoringiz bilan bog'laning</b>`);
+    return;
+  }
+
+  await ctx.replyWithHTML("<b>⏳Biroz kuting ma'lumotlar tayyorlanyapdi</b>");
   try {
     let fileId = await AggrementMaker.CreateDocumentAsync(
       ctx.UserData.StudentData
@@ -318,7 +319,6 @@ function checkNeededData(data: MStudent.Student): boolean {
   if (data.rent.location == null) return false;
   if (data.rent.location.address == null) return false;
   if (data.rent.location.city == null) return false;
-  if (data.stir == null) return false;
   if (data.tgPhone == null) return false;
   return true;
 }

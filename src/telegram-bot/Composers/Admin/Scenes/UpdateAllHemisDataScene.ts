@@ -2,7 +2,7 @@ import { Composer, Markup, Scenes, Telegraf, TelegramError } from "telegraf";
 import MyContext from "../../../Interfaces/MyContext";
 import HemisDataModel, { HemisData } from "../../../Models/HemisDataModel";
 import GetAllDataFromHemis from "../../../Services/GetAllDataFromHemis";
-
+import _ from "lodash";
 interface MySessionData extends Scenes.WizardSessionData {
   allHemisData: HemisData[];
 }
@@ -18,8 +18,9 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
     .action("yes", async (ctx, next) => {
 
       await ctx.replyWithHTML("<b>⏳Biroz kuting. Ma'lumotlar qo'shilyapdi.</b>");
-      await HemisDataModel.deleteMany({});
-      await HemisDataModel.insertMany(ctx.scene.session.allHemisData);
+      for (const x of ctx.scene.session.allHemisData) {
+        await HemisDataModel.updateOne({ student_id_number: x }, { $set: x }).catch(e => { });
+      }
       await ctx.replyWithHTML(
         "<b>✅Barcha ma'lumotlar muvoffaqiyatli yangilandi!</b>"
       );

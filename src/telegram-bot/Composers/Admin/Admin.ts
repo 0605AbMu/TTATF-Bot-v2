@@ -11,6 +11,7 @@ import Reg from "./Scenes/Reg";
 import UpdateAllHemisDataScene from "./Scenes/UpdateAllHemisDataScene";
 import UpdateStudentPasportData from "./Scenes/UpdateStudentPasportDataScene";
 import SendMessageToAll from "./Scenes/SendMessageToAllScene";
+import UpdateStudentLocationData from "./Scenes/UpdateStudentLocationDataScene";
 // Contants
 import { Home } from "./Constants/Buttons";
 import { HomeMarkup } from "./Constants/Markups";
@@ -29,6 +30,7 @@ Admin.use(
     UpdateAllHemisDataScene,
     UpdateStudentPasportData,
     SendMessageToAll,
+    UpdateStudentLocationData
   ])
 );
 
@@ -60,6 +62,14 @@ Admin.hears(Home.Exit, async (ctx) => {
   );
 });
 
+Admin.hears(Home.Stat, async (ctx) => {
+  await ctx.replyWithHTML(`<b>📆Bugungi sana: ${new Date(
+    Date.now()
+  ).toLocaleDateString()};
+📈Jami a'zolar soni: ${await UserModel.countDocuments()} ta;
+👨‍🎓Talabalar soni: ${await UserModel.count({ role: "Student" })} ta;</b>`);
+});
+
 Admin.hears(Home.UpdateStudentPasportData, async (ctx) => {
   await ctx.scene.enter("UpdateStudentPasportData");
 });
@@ -74,7 +84,7 @@ Admin.hears(Home.UpdateScheduleListData, async (ctx) => {
     let data = await GetAllScheduleListData();
     try {
       await ScheduleListModel.deleteMany({});
-    } catch (error) {}
+    } catch (error) { }
     await ScheduleListModel.insertMany(data);
     ctx.replyWithHTML(`<b>✅Ma'lumotlar muvoffaqiyatli yangilandi!</b>`);
   } catch (err) {
@@ -82,6 +92,10 @@ Admin.hears(Home.UpdateScheduleListData, async (ctx) => {
     ctx.replyWithHTML(`<b>❌Xatolik: ${(<Error>err).message}</b>`);
   }
 });
+
+Admin.hears(Home.UpdateStudentLocationData, async (ctx) => {
+  await ctx.scene.enter("UpdateStudentLocationData");
+})
 
 Admin.use(
   Composer.catch((err, ctx) => {

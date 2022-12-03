@@ -38,7 +38,7 @@ type TStep = {
 
 const Steps: TStep[] = [
   {
-    name: "Ijara uy narxi",
+    name: "Ijara narxi",
     message: (e) =>
       `Ijarada turgan uyingizning narxini yuboring[faqat raqamlarda va so'mda](${e ?? "Noma'lum"
       }):`,
@@ -60,7 +60,7 @@ const Steps: TStep[] = [
     },
   },
   {
-    name: "Ijarada turgan shahringiz",
+    name: "Shahar",
     message: (e) => `Qaysi shahrda ijaraga turasiz?(${e ?? "Noma'lum"}):`,
     paramName: "rent.location.city",
     checkMethod: <T extends string>(s: T): boolean => {
@@ -68,7 +68,7 @@ const Steps: TStep[] = [
     },
   },
   {
-    name: "Ijara uy manzili",
+    name: "Manzil",
     message: (e) =>
       `Ijarada turgan uyingizning manzilini yuboring(${e ?? "Noma'lum"}):`,
     paramName: "rent.location.address",
@@ -76,15 +76,16 @@ const Steps: TStep[] = [
       return true;
     },
   },
-  {
-    name: "STIR",
-    message: (e) =>
-      `STIR raqamingizni yuboring[faqat raqamlarda](${e ?? "Noma'lum"}):`,
-    paramName: "stir",
-    checkMethod: <T extends string>(s: T): boolean => {
-      return new RegExp(/^([0-9]+)$/gm).test(s);
-    },
-  },
+  // Vaqtinchalik o'chirildi
+  // {
+  //   name: "STIR",
+  //   message: (e) =>
+  //     `STIR raqamingizni yuboring[faqat raqamlarda](${e ?? "Noma'lum"}):`,
+  //   paramName: "stir",
+  //   checkMethod: <T extends string>(s: T): boolean => {
+  //     return new RegExp(/^([0-9]+)$/gm).test(s);
+  //   },
+  // },
   {
     name: "Telegram raqami",
     message: (e) =>

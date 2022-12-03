@@ -18,6 +18,7 @@ export class HemisData {
   };
   jshshir?: number | string;
   seria?: number | string;
+  locationType: string;
   province: {
     code: string;
     name: string;

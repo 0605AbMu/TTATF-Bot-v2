@@ -21,13 +21,6 @@ User.start(async (ctx) => {
   });
 });
 
-User.hears(buttons.Home.Stat, async (ctx) => {
-  await ctx.replyWithHTML(`<b>📆Bugungi sana: ${new Date(
-    Date.now()
-  ).toLocaleDateString()};
-📈Jami a'zolar soni: ${await UserModel.countDocuments()} ta;
-👨‍🎓Talabalar soni: ${await UserModel.count({ role: "Student" })} ta;</b>`);
-});
 
 User.hears(buttons.Home.Kirish, async (ctx) => {
   try {
