@@ -8,5 +8,7 @@
   "LOG_PATH": "logs/",
   "HEMIS_API_URL": "https://student.ttatf.uz/rest/v1/",
   "BEARER_TOKEN_FOR_HEMIS": "54uiN7TQy6ans_8YXoxaTRnT5dHByB4La",
-  "LAST_AGGREMENT_FILE_ORDER": 894
+  "LAST_AGGREMENT_FILE_ORDER": 894,
+  "GLOBAL_APP_HOST": "10.10.1.10",
+  "GLOBAL_APP_PORT": 200
 }

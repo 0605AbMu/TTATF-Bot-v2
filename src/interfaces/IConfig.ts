@@ -27,4 +27,12 @@ export default interface IConfig {
    * Name of database
    */
   MONGO_DB_NAME: string;
+  /**
+   * host of that application where it is global
+   */
+  GLOBAL_APP_HOST: string;
+  /**
+   * port of that application where it is global
+   */
+  GLOBAL_APP_PORT: number;
 }

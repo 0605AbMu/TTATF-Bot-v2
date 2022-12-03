@@ -15,6 +15,9 @@ class Config implements IConfig {
   HEMIS_API_URL: string;
   BEARER_TOKEN_FOR_HEMIS: string;
   LAST_AGGREMENT_FILE_ORDER: number;
+  GLOBAL_APP_HOST: string;
+  GLOBAL_APP_PORT: number;
+
   constructor() {
     // Detect ENV type?
     this.InitalizeENV();

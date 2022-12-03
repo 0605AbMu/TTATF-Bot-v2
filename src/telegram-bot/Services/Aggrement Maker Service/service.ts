@@ -64,8 +64,7 @@ class Service {
     data: ArrayBuffer;
     extension: string;
   }> {
-    const URLPath =
-      Config.APP_HOST + ":" + Config.APP_PORT + "/file/" + fileId.toString();
+    const URLPath = Config.GLOBAL_APP_HOST + ":" + Config.GLOBAL_APP_PORT + "/files/" + fileId.toString();
     return new Promise(async (res, rej) => {
       qrCode.toBuffer(URLPath, { color: {}, type: "png" }, (err, buffer) => {
         if (err) rej(err);
