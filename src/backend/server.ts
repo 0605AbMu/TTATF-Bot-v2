@@ -45,3 +45,4 @@ app.listen(Config.APP_PORT, Config.APP_HOST, () => {
     "App running on " + `http://${Config.APP_HOST}:${Config.APP_PORT}/`
   );
 });
+
