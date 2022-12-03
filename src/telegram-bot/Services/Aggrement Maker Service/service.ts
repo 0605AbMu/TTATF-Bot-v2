@@ -10,8 +10,7 @@ import { Readable } from "node:stream";
 class Service {
   private template: Buffer;
   private templateFilePath: string = path.join(__dirname, "template.docx");
-  private constructor() {}
-
+  private constructor() { }
   public async CreateDocumentAsync(data: TStudent): Promise<ObjectId> {
     try {
       if (this.template == undefined) await this.InitializeTemplate();
@@ -35,6 +34,10 @@ class Service {
             data: data,
             cmdDelimiter: ["{{", "}}"],
             failFast: true,
+            rejectNullish: false,
+            errorHandler(e, raw_code?) {
+
+            },
           })
         );
       } catch (error) {
