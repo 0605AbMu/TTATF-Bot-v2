@@ -9,7 +9,7 @@ import path from "path";
 import { Readable } from "node:stream";
 class Service {
   private template: Buffer;
-  private templateFilePath: string = path.join(__dirname, "template.docx");
+  private templateFilePath: string = path.join(process.cwd(), "src", "telegram-bot", "Services", "Aggrement Maker Service", "template.docx");
   private constructor() { }
   public async CreateDocumentAsync(data: TStudent): Promise<ObjectId> {
     try {

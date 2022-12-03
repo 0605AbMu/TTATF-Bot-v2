@@ -168,7 +168,6 @@ Student.hears(Home.Shartnoma, async (ctx) => {
   let startAt = new Date(experiedAt);
   startAt.setDate(1);
   startAt.setUTCHours(0, 0, 0);
-  console.log(experiedAt, startAt);
 
   let file = await (
     await AggrementFilesBucket.find({
