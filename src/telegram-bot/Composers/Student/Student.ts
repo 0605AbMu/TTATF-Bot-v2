@@ -103,12 +103,12 @@ Telegram raqami: <code>${privateData.tgPhone?.phone_number ?? "❌noma'lum"
 🟢-- <code>Hemis Ma'lumotlari</code> --
 O'rtacha GPA: ${data.avg_gpa};
 Kredit: ${data.total_credit};
-Kurs: ${data.level.name};
-Guruh: ${data.group.name};
+Kurs: ${data.level?.name};
+Guruh: ${data.group?.name};
 Manzil: ${data.address};
-Tuman: ${data.district.name};
-Viloyat: ${data.province.name};
-Holati: ${data.studentStatus.name};
+Tuman: ${data.district?.name};
+Viloyat: ${data.province?.name};
+Holati: ${data.studentStatus?.name};
 
 <code>⚠️Eslatma: Ma'lumotlar bilan bog'liq barcha jarayonlardagi xabarlar(ko'rish, yangilash)
 10 daqiqadan kam bo'lmagan vaqtda o'chirib yuboriladi!</code>
@@ -287,9 +287,9 @@ Student.on("callback_query", async (ctx, next) => {
       .map(
         (x, index) => `
 <code>#${index + 1}</code>
-Fan: ${x.subject.name};
-O'qituvchi: ${x.employee.name};
-Xona: <code>${x.auditorium.name}</code>;
+Fan: ${x.subject?.name};
+O'qituvchi: ${x.employee?.name};
+Xona: <code>${x.auditorium?.name}</code>;
 Boshlanish vaqti: <code>${x.lessonPair.start_time}</code>;
 Tugash vaqti: <code>${x.lessonPair.end_time}</code>;`
       )
