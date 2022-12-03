@@ -64,7 +64,7 @@ const Steps: TStep[] = [
     message: (e) => `Qaysi shahrda ijaraga turasiz?(${e ?? "Noma'lum"}):`,
     paramName: "rent.location.city",
     checkMethod: <T extends string>(s: T): boolean => {
-      return new RegExp(/^([a-zA-z0-9@#$%^&*`'"><>< ]+)$/gm).test(s);
+      return true;
     },
   },
   {
@@ -73,7 +73,7 @@ const Steps: TStep[] = [
       `Ijarada turgan uyingizning manzilini yuboring(${e ?? "Noma'lum"}):`,
     paramName: "rent.location.address",
     checkMethod: <T extends string>(s: T): boolean => {
-      return new RegExp(/^([a-zA-z0-9@#$%^&*`'"><>< ]+)$/gm).test(s);
+      return true;
     },
   },
   {
