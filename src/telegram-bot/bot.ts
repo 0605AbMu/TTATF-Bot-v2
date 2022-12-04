@@ -6,7 +6,7 @@ import logger from "../logger/logger";
 import https from "https";
 
 import Admin from "./Composers/Admin/Admin";
-import Student from "./Composers/Student/Student";
+import Student, { RoutinCheckerForScheduleList } from "./Composers/Student/Student";
 import User from "./Composers/User/User";
 
 //Middlewares
@@ -68,3 +68,7 @@ bot
   .catch((err) => {
     Logger.LogError(err);
   });
+
+
+// Talabalarning dars jadvalini har doim soat 7 da jo'natib turadi
+RoutinCheckerForScheduleList(bot.telegram);

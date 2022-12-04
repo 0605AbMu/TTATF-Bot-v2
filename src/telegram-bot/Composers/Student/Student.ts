@@ -5,6 +5,8 @@ import * as MStudent from "../../Models/StudentModel";
 import AggrementFilesBucket from "../../Models/AggrementFilesBucket";
 import logger from "../../../logger/logger";
 import ScheduleListModel from "../../Models/ScheduleListModel";
+import { Telegram } from "telegraf";
+
 //Middlewares
 import { CheckStudentLoginAndPasswordForExists } from "./Middlewares/CheckHemisDataOfStudent";
 
@@ -323,6 +325,8 @@ function checkNeededData(data: MStudent.Student): boolean {
   return true;
 }
 
+
+
 function GetDayNameInTheWeek(day: number): string {
   switch (day) {
     case 1:
@@ -340,4 +344,41 @@ function GetDayNameInTheWeek(day: number): string {
     default:
       return "Dushanba";
   }
+}
+
+export function RoutinCheckerForScheduleList(Telegram: Telegram) {
+
+  setInterval(async () => {
+    if (new Date().getHours() != 7)
+      return;
+
+    let users = await UserModel.find({ role: "Student" }).toArray();
+    for (const user of users) {
+      let list = await ScheduleListModel.find({
+        "faculty.id": user.StudentData.HemisData.department.id,
+        "group.id": user.StudentData.HemisData.group.id,
+        lesson_date: new Date().getTime() / 1000,
+      }).toArray();
+
+
+      let s =
+        GetDayNameInTheWeek(new Date().getDay()).toUpperCase() + " - kuni dars jadvali:" +
+        "\n" +
+        list
+          .map(
+            (x, index) => `
+<code>#${index + 1}</code>
+Fan: ${x.subject?.name};
+O'qituvchi: ${x.employee?.name};
+Xona: <code>${x.auditorium?.name}</code>;
+Boshlanish vaqti: <code>${x.lessonPair.start_time}</code>;
+Tugash vaqti: <code>${x.lessonPair.end_time}</code>;`
+          )
+          .join("\n".padEnd(35, "-"));
+
+      await Telegram.sendMessage(user.telegamUser.id, s, { parse_mode: "HTML" }).catch(e => { });
+    }
+
+  }, 60 * 60 * 1000);
+
 }
