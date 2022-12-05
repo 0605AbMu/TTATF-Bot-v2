@@ -48,12 +48,12 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           await StudentPassportDataModel.drop({});
         } catch (error) { }
         data.splice(0, 1);
-        const inserted = await StudentPassportDataModel.insertMany(
-          data.map((x) => {
-            return new StudentPassportData(x[0], x[1], x[2], x[3]);
-          })
-        );
 
+        let count = 0;
+        for (const x of data) {
+          await StudentPassportDataModel.updateOne({ _id: x[0] }, { $set: { student_id_number: x[0], seria: x[2], jshshir: x[3] }, $setOnInsert: { studentName: x[1] } }, { upsert: true });
+          count++;
+        }
 
         for (const x of data) {
           await HemisDataModel.updateOne({ student_id_number: x[0] }, { $set: { seria: x[2], jshshir: x[3] } }).catch(e => { });
@@ -68,7 +68,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
         ctx.scene.leave();
         await ctx.replyWithHTML(
-          `<b>✅${inserted.insertedCount} ta ma'lumot o'qib olindi!</b>`,
+          `<b>✅${count} ta ma'lumot o'qib olindi!</b>`,
           {
             reply_markup: HomeMarkup.resize().reply_markup,
           }
