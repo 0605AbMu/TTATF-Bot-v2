@@ -203,7 +203,7 @@ Student.hears(Home.Shartnoma, async (ctx) => {
     return;
   }
 
-  if (ctx.UserData.StudentData.HemisData.locationType.toLowerCase() != "ijaradagi uyda") {
+  if (ctx.UserData.StudentData.HemisData.locationType == undefined || ctx.UserData.StudentData.HemisData.locationType.toLowerCase() != "ijaradagi uyda") {
     await ctx.replyWithHTML(`<b>Siz ijaradagi uyda istiqomat qilmaysiz. Agar da bu ma'lumot noto'g'ri bo'ladigan bo'lsa Tutoringiz bilan bog'laning</b>`);
     return;
   }
