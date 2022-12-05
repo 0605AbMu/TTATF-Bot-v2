@@ -44,14 +44,11 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         if (result[0].data.length == 0 || (<[]>result[0].data[0]).length < 4)
           throw new Error("Fayldagi ma'lumotlar formati to'g'ri emas!");
         let data = result[0].data;
-        try {
-          await StudentPassportDataModel.drop({});
-        } catch (error) { }
         data.splice(0, 1);
 
         let count = 0;
         for (const x of data) {
-          await StudentPassportDataModel.updateOne({ _id: x[0] }, { $set: { student_id_number: x[0], seria: x[2], jshshir: x[3] }, $setOnInsert: { studentName: x[1] } }, { upsert: true });
+          await StudentPassportDataModel.updateOne({ student_id_number: x[0] }, { $set: { student_id_number: x[0], seria: x[2], jshshir: x[3] }, $setOnInsert: { studentName: x[1] } }, { upsert: true });
           count++;
         }
 
