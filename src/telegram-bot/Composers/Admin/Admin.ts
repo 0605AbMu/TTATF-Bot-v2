@@ -12,6 +12,7 @@ import UpdateAllHemisDataScene from "./Scenes/UpdateAllHemisDataScene";
 import UpdateStudentPasportData from "./Scenes/UpdateStudentPasportDataScene";
 import SendMessageToAll from "./Scenes/SendMessageToAllScene";
 import UpdateStudentLocationData from "./Scenes/UpdateStudentLocationDataScene";
+import UpdateEmployeeData from "./Scenes/UpdateEmployeeDataScene";
 // Contants
 import { Home } from "./Constants/Buttons";
 import { HomeMarkup } from "./Constants/Markups";
@@ -30,7 +31,8 @@ Admin.use(
     UpdateAllHemisDataScene,
     UpdateStudentPasportData,
     SendMessageToAll,
-    UpdateStudentLocationData
+    UpdateStudentLocationData,
+    UpdateEmployeeData
   ])
 );
 
@@ -95,6 +97,10 @@ Admin.hears(Home.UpdateScheduleListData, async (ctx) => {
 
 Admin.hears(Home.UpdateStudentLocationData, async (ctx) => {
   await ctx.scene.enter("UpdateStudentLocationData");
+})
+
+Admin.hears(Home.UpdateEmployeeData, async ctx => {
+  await ctx.scene.enter("UpdateEmployeeData");
 })
 
 Admin.use(

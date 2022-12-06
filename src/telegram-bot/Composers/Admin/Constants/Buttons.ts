@@ -4,6 +4,7 @@ export const Home = {
   UpdateScheduleListData: "Dars jadvalini yangilash",
   UpdateStudentPasportData: "Talabalarning pasport ma'lumotlarini yangilash",
   UpdateStudentLocationData: "Talabalarning turar joy ma'lumotlarini yuklash",
+  UpdateEmployeeData: "Xodimlar ma'lumotlarini yangilash",
   Stat: "Statistika",
   Exit: "Chiqish",
 };
