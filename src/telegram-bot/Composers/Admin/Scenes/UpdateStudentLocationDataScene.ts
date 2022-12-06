@@ -48,7 +48,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
         let count = 0;
         for (const x of data) {
-          await HemisDataModel.updateOne({ student_id_number: <string>x[0] }, { $set: { locationType: <string>x[1] } }).catch().then(x => count++);
+          await HemisDataModel.updateOne({ student_id_number: String(x[0]) }, { $set: { locationType: String(x[1]) } }).catch().then(x => count++);
         }
         let ids = await StudentModel.find({}, { projection: { _id: 1, HemisData: 1 } }).toArray();
         for (const id of ids) {

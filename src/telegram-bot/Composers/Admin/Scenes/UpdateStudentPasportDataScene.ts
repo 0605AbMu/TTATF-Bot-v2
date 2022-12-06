@@ -48,12 +48,12 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
         let count = 0;
         for (const x of data) {
-          await StudentPassportDataModel.updateOne({ student_id_number: <string>x[0] }, { $set: { student_id_number: <string>x[0], seria: <string>x[2], jshshir: <string>x[3] }, $setOnInsert: { studentName: <string>x[1] } }, { upsert: true });
+          await StudentPassportDataModel.updateOne({ student_id_number: String(x[0]) }, { $set: { student_id_number: String(x[0]), seria: String(x[2]), jshshir: String(x[3]) }, $setOnInsert: { studentName: String(x[1]) } }, { upsert: true });
           count++;
         }
 
         for (const x of data) {
-          await HemisDataModel.updateOne({ student_id_number: <string>x[0] }, { $set: { seria: <string>x[2], jshshir: <string>x[3] } }).catch(e => { });
+          await HemisDataModel.updateOne({ student_id_number: String(x[0]) }, { $set: { seria: String(x[2]), jshshir: String(x[3]) } }).catch(e => { });
         }
 
         let ids = await StudentModel.find({}, { projection: { _id: 1, HemisData: 1 } }).toArray();
