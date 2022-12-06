@@ -8,3 +8,14 @@ export const Home = {
   Stat: "Statistika",
   Exit: "Chiqish",
 };
+
+
+export const StatButton = {
+  Stat: "Yozma statistika",
+  HemisDatas: "Hemis Ma'lumotlari",
+  ThisWeekScheduleList: "Bu hafta dars jadvali",
+  EmployeeData: "Xodimlar Ma'lumotlari",
+  ActiveStudents: "Botdagi faol talabalar",
+  BotMembers: "Bot a'zolari",
+  Back: "🔙Orqaga"
+}

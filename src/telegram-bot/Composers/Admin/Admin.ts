@@ -13,6 +13,7 @@ import UpdateStudentPasportData from "./Scenes/UpdateStudentPasportDataScene";
 import SendMessageToAll from "./Scenes/SendMessageToAllScene";
 import UpdateStudentLocationData from "./Scenes/UpdateStudentLocationDataScene";
 import UpdateEmployeeData from "./Scenes/UpdateEmployeeDataScene";
+import GetStat from "./Scenes/GetStatScene";
 // Contants
 import { Home } from "./Constants/Buttons";
 import { HomeMarkup } from "./Constants/Markups";
@@ -32,7 +33,8 @@ Admin.use(
     UpdateStudentPasportData,
     SendMessageToAll,
     UpdateStudentLocationData,
-    UpdateEmployeeData
+    UpdateEmployeeData,
+    GetStat
   ])
 );
 
@@ -65,11 +67,12 @@ Admin.hears(Home.Exit, async (ctx) => {
 });
 
 Admin.hears(Home.Stat, async (ctx) => {
-  await ctx.replyWithHTML(`<b>📆Bugungi sana: ${new Date(
-    Date.now()
-  ).toLocaleDateString()};
-📈Jami a'zolar soni: ${await UserModel.countDocuments()} ta;
-👨‍🎓Talabalar soni: ${await UserModel.count({ role: "Student" })} ta;</b>`);
+  await ctx.scene.enter("GetStat");
+//   await ctx.replyWithHTML(`<b>📆Bugungi sana: ${new Date(
+//     Date.now()
+//   ).toLocaleDateString()};
+// 📈Jami a'zolar soni: ${await UserModel.countDocuments()} ta;
+// 👨‍🎓Talabalar soni: ${await UserModel.count({ role: "Student" })} ta;</b>`);
 });
 
 Admin.hears(Home.UpdateStudentPasportData, async (ctx) => {

@@ -82,8 +82,8 @@ scene.enter(async (ctx) => {
 
   await ctx.replyWithDocument(
     {
-      source: NodeXlsx.build([{ name: "student location types", data: [["Talaba id si", "F.I.O", "Turar joy turi"], ...sheetData], options: { "!cols": [{ width: 20 }, { width: 25 }] } }]),
-      filename: "example.xlsx"
+      source: NodeXlsx.build([{ name: "student location types", data: [["Talaba id si", "F.I.O", "Turar joy turi"], ...sheetData], options: { "!cols": [{ width: 20 }, { width: 45 }, {wch: 20}] } }]),
+      filename: "old data and example.xlsx"
     },
     {
       caption: "<b>Talabalar turar joy ma'lumotlarini excel fayl ko'rinishida yuboring. Example ni yuqoridan yuklab olishingiz mumkin</b>",
