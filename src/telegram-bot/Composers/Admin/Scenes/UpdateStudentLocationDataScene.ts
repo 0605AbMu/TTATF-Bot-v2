@@ -77,7 +77,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
 scene.enter(async (ctx) => {
   // Ma'lumotlarni shunchaki bo'sh excel fayl bilan emas balki oldingi ma'lumotlari bilan birga yuboradi
-
+  await ctx.replyWithHTML(`<b>⏳Biroz kuting. Ma'lumotlar tayyorlanyapdi...</b>`);
   let sheetData = (await HemisDataModel.find().toArray()).map(x => [x.student_id_number, x.full_name, x.locationType]);
 
   await ctx.replyWithDocument(
