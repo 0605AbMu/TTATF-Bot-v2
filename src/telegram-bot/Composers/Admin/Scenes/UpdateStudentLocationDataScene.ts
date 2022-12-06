@@ -48,7 +48,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
         let count = 0;
         for (const x of data) {
-          await HemisDataModel.updateOne({ student_id_number: String(x[0]) }, { $set: { locationType: String(x[1]) } }).catch().then(x => count++);
+          await HemisDataModel.updateOne({ student_id_number: String(x[0]) }, { $set: { locationType: String(x[2]) } }).catch().then(x => count++);
         }
         let ids = await StudentModel.find({}, { projection: { _id: 1, HemisData: 1 } }).toArray();
         for (const id of ids) {
@@ -77,9 +77,12 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
 scene.enter(async (ctx) => {
   // Ma'lumotlarni shunchaki bo'sh excel fayl bilan emas balki oldingi ma'lumotlari bilan birga yuboradi
+
+  let sheetData = (await HemisDataModel.find().toArray()).map(x => [x.student_id_number, x.full_name, x.locationType]);
+
   await ctx.replyWithDocument(
     {
-      source: NodeXlsx.build([{ name: "student location types", data: [["Talaba id si", "Turar joy turi"]], options: { "!cols": [{ width: 20 }, { width: 25 }] } }]),
+      source: NodeXlsx.build([{ name: "student location types", data: [["Talaba id si", "F.I.O", "Turar joy turi"], ...sheetData], options: { "!cols": [{ width: 20 }, { width: 25 }] } }]),
       filename: "example.xlsx"
     },
     {

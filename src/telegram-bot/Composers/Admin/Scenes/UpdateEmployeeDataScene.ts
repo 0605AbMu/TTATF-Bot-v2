@@ -54,9 +54,8 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
         await ctx.replyWithHTML(`<b>⏳Biroz kuting. Ma'lumotlar yangilanyapdi...</b>`);
         let count = 0;
         for (const x of data) {
-          await EmployeeModel.updateOne({ employee_id_number: x[0] }, { $set: { telefon: x[4] == "" ? null : x[4], email: x[5] == "" ? null : x[5], telegram: x[6] == "" ? null : x[6] } }).catch().then(x => count++);
+          await EmployeeModel.updateOne({ employee_id_number: String(x[0]) }, { $set: { telefon: String(x[4]) == "" ? null : String(x[4]), email: String(x[5]) == "" ? null : String(x[5]), telegram: String(x[6]) == "" ? null : String(x[6]) } }).catch().then(x => count++);
         }
-
         ctx.scene.leave();
         await ctx.replyWithHTML(
           `<b>✅${count} ta ma'lumot o'qib olindi!</b>`,
@@ -81,24 +80,31 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 scene.enter(async (ctx) => {
   await ctx.replyWithHTML(`<b>⏳Biroz kuting. Ma'lumotlar HEMIS tizimidan olinyapdi...</b>`);
   let data = await GetAllEmployeeData();
-  let count = 0;
-  for (let employee of data) {
-    // await EmployeeModel.insertOne(employee).then(x => count++);
-    if (data.filter(x => x.employee_id_number == employee.employee_id_number).length >= 2)
-      console.log("bor.");
-    // await EmployeeModel.updateOne({ id: employee.id }, { $set: employee }, { upsert: true });
 
-
+  // Update for others
+  for (let employee of data.filter(x => x.employeeType.code != "12")) {
+    await EmployeeModel.updateOne({ employee_id_number: employee.employee_id_number }, { $set: employee }, { upsert: true });
   }
-  let cellData = data.map(x => { return [x.employee_id_number, x.full_name, x.employeeType.name, x.staffPosition.name, "", "", ""] })
 
-  let contactData = NodeXlsx.build([{ name: "Employee contact", data: [["ID", "F.I.O", "Lavozim turi", "Lavozimi", "Telefon", "E-mail", "Telegram kontakt"], ...cellData], options: undefined }])
+  // Update for teachers
+  for (let employee of data.filter(x => x.employeeType.code == "12")) {
+    await EmployeeModel.updateOne({ employee_id_number: employee.employee_id_number }, { $set: employee }, { upsert: true });
+  }
+
+  data = await EmployeeModel.find({}).toArray();
+
+  let cellData = data.map(x => { return [x.employee_id_number, x.full_name, x.employeeType.name, x.staffPosition.name, x.telefon, x.email, x.telegram] })
+
+  let contactData = NodeXlsx.build([{
+    name: "Employee contact", data: [["ID", "F.I.O", "Lavozim turi", "Lavozimi", "Telefon", "E-mail", "Telegram kontakt"], ...cellData],
+    options: { "!cols": [{ wch: 10 }, { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }] }
+  }])
   await ctx.replyWithDocument({
     source: contactData,
     filename: "Contacts.xlsx"
   },
     {
-      caption: `<b>${count} ta xodim ma'lumoti o'qib olindi. Ularning contact ma'lumotlarini excel fayl ko'rinishida yuklang</b>`,
+      caption: `<b>${data.length} ta xodim ma'lumoti o'qib olindi. Ularning contact ma'lumotlarini excel fayl ko'rinishida yuklang.\n<i>⚠️Shunchaki bekor qilsangiz oldingi kontakt ma'lumotlarida saqlanib qoladi.</i></b>`,
       parse_mode: "HTML",
       reply_markup: Markup.keyboard(["❌Bekor qilish"]).resize(true).oneTime(true).reply_markup
     })

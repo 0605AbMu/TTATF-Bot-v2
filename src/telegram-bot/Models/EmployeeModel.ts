@@ -15,7 +15,7 @@ export class Employee {
   public third_name: string;
   public image: string;
   public year_of_enter: string;
-  public employee_id_number: 0;
+  public employee_id_number: string;
   public gender: {
     code: string;
     name: string;

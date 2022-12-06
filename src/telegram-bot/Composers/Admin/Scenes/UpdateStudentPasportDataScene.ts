@@ -84,10 +84,10 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
 
 scene.enter(async (ctx) => {
   // Ma'lumotlarni shunchaki bo'sh excel fayl bilan emas balki oldingi ma'lumotlari bilan birga yuboradi
-
+  let sheetData = (await HemisDataModel.find().toArray()).map(x => [x.student_id_number, x.full_name, x.seria, x.jshshir]);
   await ctx.replyWithDocument(
     {
-      source: NodeXlsx.build([{ name: "Students passport data", data: [["Talaba ID si", "Talaba F.I.O", "Pasport seria si", "JSHSHIR"]], options: { "!cols": [{ wch: 10 }, { wch: 30 }, { wch: 9 }, { wch: 14 }] } }]),
+      source: NodeXlsx.build([{ name: "Students passport data", data: [["Talaba ID si", "Talaba F.I.O", "Pasport seria si", "JSHSHIR"], ...sheetData], options: { "!cols": [{ wch: 10 }, { wch: 30 }, { wch: 9 }, { wch: 14 }] } }]),
       filename: "example.xlsx"
     },
     {
