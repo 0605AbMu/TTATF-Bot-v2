@@ -24,8 +24,10 @@ import GetReferenceScene from "./Scenes/GetReferenceScene";
 import ChangePassword from "./Scenes/ChangeStudentPasswordScene";
 import UpdateStudentDataScene from "./Scenes/UpdateStudentDataScene";
 import ScheduleListScene from "./Scenes/ScheduleListScene";
-import { InlineKeyboardButton } from "telegraf/types";
+import { InlineKeyboardButton, InlineQueryResultArticle, InlineQueryResultPhoto } from "telegraf/types";
 import { isNumberObject } from "util/types";
+import EmployeeModel from "../../Models/EmployeeModel";
+import { ObjectDeepParserForValues } from "../../Utils/NestedObjectParser";
 const Student = new Composer<MyContext>();
 
 Student.use(session());
@@ -261,6 +263,13 @@ Student.hears(Home.GetScheduleListForWeek, async (ctx) => {
   });
 });
 
+Student.hears(Home.EmployeeData, async ctx => {
+  await ctx.replyWithHTML(`<b>Xodimlar haqidagi ma'lumotlarni quyidagi tugmani bosish orqali qidirishingiz mumkin</b>`,
+    {
+      reply_markup: Markup.inlineKeyboard([{ text: "Qidirish", switch_inline_query_current_chat: "" }]).reply_markup
+    });
+})
+
 Student.action("updateMyData", async (ctx) => {
   await ctx.scene.enter("UpdateStudentData", ctx);
 });
@@ -304,6 +313,36 @@ Tugash vaqti: <code>${x.lessonPair.end_time}</code>;`
     ctx.replyWithHTML(`<b>${s}</b>`);
   }
 });
+
+// Student.inlineQuery(new Trigger)
+
+Student.on("inline_query", async ctx => {
+  let employees = (await EmployeeModel.find().map(x => { if ([x.full_name, x.department.name, x.academicDegree.name, x.staffPosition.name, x.telefon, x.telegram, x.employeeType.name, x.staffPosition.name, x.academicRank.name].join(" ").toLocaleLowerCase().indexOf(ctx.inlineQuery.query.toLowerCase()) !== -1) return x; else return null; }).limit(20).toArray()).filter(x => x != null);
+  let result: InlineQueryResultArticle[] = employees.map((x, index) => ({
+    type: "article",
+    id: index.toString(),
+    title: x.full_name,
+    thumb_url: x.image,
+    description: `${x.department?.name ?? "❌Noma'lum"}\n${x.staffPosition?.name ?? "❌Noma'lum"}`,
+    input_message_content: {
+      parse_mode: "HTML",
+      message_text: `<b>F.I.O: ${x.full_name ?? "❌Noma'lum"};
+Xodim turi: ${x.employeeType?.name ?? "❌Noma'lum"};
+Darajasi: ${x.academicDegree?.name ?? "❌Noma'lum"};
+Kafedra: ${x.department?.name ?? "❌Noma'lum"};
+Pozitsiyasi: ${x.staffPosition?.name ?? "❌Noma'lum"};
+Telefon: ${x.telefon ?? "❌Noma'lum"};
+Telefon: ${x.telegram ?? "❌Noma'lum"};
+E-mail: ${x.email ?? "❌Noma'lum"};</b>`,
+      photo_url: x.image
+    }
+  }));
+  await ctx.answerInlineQuery(result, {
+    is_personal: true,
+    cache_time: 10,
+  }
+  )
+})
 
 export default Student;
 

@@ -1,4 +1,4 @@
-export function ObjectDeepParserForValues(obj: Object) {
+export function ObjectDeepParserForValues(obj: Object): string[] {
     if (obj == undefined || obj == null)
         return null;
     return Object.values(obj).filter(x => typeof (x) != "function" && typeof (x) != "symbol" && x != null).map(x => typeof (x) == "object" ? ObjectDeepParserForValues(x) : x).flat();
