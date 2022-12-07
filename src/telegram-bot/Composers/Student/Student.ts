@@ -92,8 +92,8 @@ Jinsi: ${privateData.HemisData?.gender?.name ?? "❌noma'lum"};
 Ijaradagi uy shahri: ${privateData.rent?.location?.city ?? "❌noma'lum"};
 Ijaradagi uy manzili: ${privateData.rent?.location?.address ?? "❌noma'lum"};
 Ijaradagi uy narxi: ${privateData.rent?.amount ?? "❌noma'lum"};
-JSHSHIR: ${privateData.HemisData?.jshshir ?? "❌noma'lum"};
-Pasport seria: ${privateData.HemisData?.seria ?? "❌noma'lum"};
+JSHSHIR: <code>${privateData.HemisData?.jshshir ?? "❌noma'lum"};</code>
+Pasport seria: <code>${privateData.HemisData?.seria ?? "❌noma'lum"};</code>
 E-mail: <code>${privateData.email ?? "❌noma'lum"};</code>
 Telefon: <code>${privateData.phone ?? "❌noma'lum"};</code>
 Telegram raqami: <code>${privateData.tgPhone?.phone_number ?? "❌noma'lum"
