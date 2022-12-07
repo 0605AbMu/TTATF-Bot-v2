@@ -159,7 +159,7 @@ Holati: ${data.studentStatus?.name};
 Student.hears(Home.Shartnoma, async (ctx) => {
   let date = new Date(Date.now());
   let experiedAt = new Date(date);
-  experiedAt.setDate(7);
+  experiedAt.setDate(10);
   experiedAt.setUTCHours(0, 0, 0);
   let startAt = new Date(experiedAt);
   startAt.setDate(1);
