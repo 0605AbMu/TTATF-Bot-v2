@@ -1,4 +1,4 @@
-import { Composer, Markup, Scenes, session } from "telegraf";
+import { Composer, Context, Markup, Scenes, session } from "telegraf";
 import MyContext from "../../Interfaces/MyContext";
 import UserModel from "../../Models/UserModel";
 import * as MStudent from "../../Models/StudentModel";
@@ -399,7 +399,10 @@ export function RoutinCheckerForScheduleList(Telegram: Telegram) {
         lesson_date: new Date().getTime() / 1000,
       }).toArray();
 
-
+      if (list.length == 0) {
+        await Telegram.sendMessage(user.telegamUser.id, "<b>Siz uchun bugungi dars jadvali ma'lumotlari topilmadi!</b>", { parse_mode: "HTML" }).catch(e => { })
+        continue;
+      }
       let s =
         GetDayNameInTheWeek(new Date().getDay()).toUpperCase() + " - kuni dars jadvali:" +
         "\n" +
