@@ -108,7 +108,6 @@ Jami o'qituvchi ma'lumotlari soni: ${await EmployeeModel.countDocuments({ "emplo
       await ctx.scene.leave();
     })
     .hears(StatButton.Back, async ctx => {
-      await ctx.replyWithHTML(`<b>Bosh menyu</b>`, { reply_markup: HomeMarkup.resize(true).reply_markup });
       await ctx.scene.leave();
     })
     .on("message", async ctx => {
