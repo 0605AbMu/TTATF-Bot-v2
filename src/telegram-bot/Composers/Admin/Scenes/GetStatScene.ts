@@ -40,7 +40,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           filename: "Hemis Datas.xlsx"
         }
       )
-      ctx.scene.leave();
+      await ctx.scene.leave();
     })
     // Bot a'zolari
     .hears(StatButton.BotMembers, async ctx => {
@@ -53,7 +53,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           filename: "Bot Members Datas.xlsx"
         }
       )
-      ctx.scene.leave();
+      await ctx.scene.leave();
     })
 
     // Active student datas
@@ -67,7 +67,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           filename: "Active student Datas.xlsx"
         }
       )
-      ctx.scene.leave();
+      await ctx.scene.leave();
     })
     // Xodimlar ma'lumotlari
     .hears(StatButton.EmployeeData, async ctx => {
@@ -80,7 +80,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           filename: "Employee Datas.xlsx"
         }
       )
-      ctx.scene.leave();
+      await ctx.scene.leave();
     })
     // Dars jadvali ma'lumotlari
     .hears(StatButton.ThisWeekScheduleList, async ctx => {
@@ -93,7 +93,7 @@ const scene = new Scenes.WizardScene<MyWizardContext>(
           filename: "Schedule List Datas.xlsx"
         }
       )
-      ctx.scene.leave();
+      await ctx.scene.leave();
     })
     // Writable Stat
     .hears(StatButton.Stat, async ctx => {
@@ -105,10 +105,11 @@ Jami dars jadval ma'lumotlari soni: ${await ScheduleListModel.countDocuments()};
 Xodimlar ma'lumotlari soni: ${await EmployeeModel.countDocuments()};
 Jami o'qituvchi ma'lumotlari soni: ${await EmployeeModel.countDocuments({ "employeeType.code": "12" })};
 </code>`);
-      ctx.scene.leave();
+      await ctx.scene.leave();
     })
     .hears(StatButton.Back, async ctx => {
       await ctx.replyWithHTML(`<b>Bosh menyu</b>`, { reply_markup: HomeMarkup.resize(true).reply_markup });
+      await ctx.scene.leave();
     })
     .on("message", async ctx => {
       throw new Error("Noto'g'ri tanlov");
